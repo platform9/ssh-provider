@@ -9,6 +9,7 @@ import (
 )
 
 type SSHActuator struct {
+	InsecureIgnoreHostKey bool
 }
 
 func (sa *SSHActuator) Create(cluster *clusterv1.Cluster, machine *clusterv1.Machine) error {
