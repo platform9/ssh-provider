@@ -3,7 +3,7 @@
 .PHONY: image push dev_image dev_push
 
 PREFIX = "platform9"
-NAME = "ssh-machine-controller"
+NAME = "ssh-provider"
 TAG ?= $(shell git describe --tags)
 
 image:
