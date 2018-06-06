@@ -20,7 +20,7 @@ type SSHProviderConfigCodec struct {
 	decoder runtime.Decoder
 }
 
-const GroupName = "SSHproviderconfig"
+const GroupName = "sshproviderconfig"
 
 var SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: "v1alpha1"}
 
@@ -49,7 +49,7 @@ func NewScheme() (*runtime.Scheme, error) {
 	if err := AddToScheme(scheme); err != nil {
 		return nil, err
 	}
-	if err := SSHproviderconfig.AddToScheme(scheme); err != nil {
+	if err := sshproviderconfig.AddToScheme(scheme); err != nil {
 		return nil, err
 	}
 	return scheme, nil
