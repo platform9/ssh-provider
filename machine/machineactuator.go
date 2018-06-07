@@ -2,7 +2,7 @@
 Copyright 2018 Platform 9 Systems, Inc.
 */
 
-package actuator
+package machine
 
 import (
 	clusterv1 "sigs.k8s.io/cluster-api/pkg/apis/cluster/v1alpha1"
