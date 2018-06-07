@@ -27,10 +27,6 @@
 # To generate code for sshproviderconfig
 required = [ "k8s.io/code-generator/cmd/deepcopy-gen" ]
 
-[[constraint]]
-  branch = "master"
-  name = "sigs.k8s.io/cluster-api"
-
 [prune]
   go-tests = true
   unused-packages = true
