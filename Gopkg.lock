@@ -385,6 +385,16 @@
 
 [[projects]]
   branch = "master"
+  name = "golang.org/x/tools"
+  packages = [
+    "go/ast/astutil",
+    "imports",
+    "internal/fastwalk"
+  ]
+  revision = "c65208ee29128450a4a024e3b7710f3a8d14028d"
+
+[[projects]]
+  branch = "master"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
   revision = "81158efcc9f219c511e4d3c0d61a0e6e49c01a24"
@@ -736,6 +746,30 @@
 
 [[projects]]
   branch = "master"
+  name = "k8s.io/code-generator"
+  packages = [
+    "cmd/deepcopy-gen",
+    "cmd/deepcopy-gen/args",
+    "pkg/util"
+  ]
+  revision = "4c99649af8fee16989100e4cc3e6a75143530b28"
+
+[[projects]]
+  branch = "master"
+  name = "k8s.io/gengo"
+  packages = [
+    "args",
+    "examples/deepcopy-gen/generators",
+    "examples/set-gen/sets",
+    "generator",
+    "namer",
+    "parser",
+    "types"
+  ]
+  revision = "020f9f03e7e2d20e457f98f0464fb2f7548439f4"
+
+[[projects]]
+  branch = "master"
   name = "k8s.io/kube-openapi"
   packages = [
     "pkg/builder",
@@ -752,13 +786,17 @@
   packages = [
     "pkg/apis/cluster",
     "pkg/apis/cluster/common",
-    "pkg/apis/cluster/v1alpha1"
+    "pkg/apis/cluster/v1alpha1",
+    "pkg/client/clientset_generated/clientset",
+    "pkg/client/clientset_generated/clientset/scheme",
+    "pkg/client/clientset_generated/clientset/typed/cluster/v1alpha1",
+    "util"
   ]
   revision = "730ea2d3be765d7f8cd71ed68e1d8c3bc163a3c1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9468cfab10cac3e1e98ca3e8e7beff6e1ccfc58d3b07d2c911c0c5493cbf99da"
+  inputs-digest = "f29e6b5c7bf94b949d1b7d93b5e59736f90346751156f93f520ea63c84aa4c7b"
   solver-name = "gps-cdcl"
   solver-version = 1

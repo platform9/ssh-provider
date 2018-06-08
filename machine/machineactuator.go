@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 
 	"golang.org/x/crypto/ssh"
 
@@ -20,15 +21,27 @@ type SSHActuator struct {
 	sshProviderConfigCodec *sshconfigv1.SSHProviderConfigCodec
 }
 
+func NewActuator() (*SSHActuator, error) {
+	codec, err := sshconfigv1.NewCodec()
+	if err != nil {
+		return nil, err
+	}
+	return &SSHActuator{
+		sshProviderConfigCodec: codec,
+	}, nil
+}
+
 func (sa *SSHActuator) Create(cluster *clusterv1.Cluster, machine *clusterv1.Machine) error {
 	machineConfig, err := sa.machineproviderconfig(machine.Spec.ProviderConfig)
 	if err != nil {
 		return err
 	}
 
-	// get username and ssh private key from Secret "sshcreds-machine-name"
+	// get username and ssh private key from Secret
+	// TODO add a "secretGetter" with a uniform interface for reading from
+	// the API or the filesystem
 	username := "root"
-	key, err := ioutil.ReadFile("/home/daniel/.ssh/pf9_dev")
+	key, err := ioutil.ReadFile("/Users/Daniel/coreos-privatekey")
 	if err != nil {
 		log.Fatalf("unable to read private key: %v", err)
 	}
@@ -43,13 +56,26 @@ func (sa *SSHActuator) Create(cluster *clusterv1.Cluster, machine *clusterv1.Mac
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(signer),
 		},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
-	connection, err := ssh.Dial("tcp", fmt.Sprintf("%s:%s", machineConfig.Host, machineConfig.Port), sshConfig)
-	defer connection.Close()
+	if sa.InsecureIgnoreHostKey {
+		sshConfig.HostKeyCallback = ssh.InsecureIgnoreHostKey()
+	} else {
+		parsedKeys := make([]ssh.PublicKey, len(machineConfig.PublicKeys))
+		for i, key := range machineConfig.PublicKeys {
+			parsedKey, _, _, _, err := ssh.ParseAuthorizedKey([]byte(key))
+			if err != nil {
+				log.Fatalf("unable to parse host public key: %v", err)
+			}
+			parsedKeys[i] = parsedKey
+		}
+		sshConfig.HostKeyCallback = FixedHostKeys(parsedKeys)
+	}
+
+	connection, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", machineConfig.Host, machineConfig.Port), sshConfig)
 	if err != nil {
 		log.Fatalf("unable to dial: %s", err)
 	}
+	defer connection.Close()
 
 	session, err := connection.NewSession()
 	if err != nil {
@@ -83,4 +109,21 @@ func (sa *SSHActuator) machineproviderconfig(providerConfig clusterv1.ProviderCo
 		return nil, err
 	}
 	return &config, nil
+}
+
+func FixedHostKeys(keys []ssh.PublicKey) ssh.HostKeyCallback {
+	callbacks := make([]ssh.HostKeyCallback, len(keys))
+	for i, expectedKey := range keys {
+		callbacks[i] = ssh.FixedHostKey(expectedKey)
+	}
+
+	return func(hostname string, remote net.Addr, actualKey ssh.PublicKey) error {
+		for _, callback := range callbacks {
+			err := callback(hostname, remote, actualKey)
+			if err == nil {
+				return nil
+			}
+		}
+		return fmt.Errorf("host key does not match any expected keys")
+	}
 }
