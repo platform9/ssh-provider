@@ -28,8 +28,16 @@
 required = [ "k8s.io/code-generator/cmd/deepcopy-gen" ]
 
 [[constraint]]
-  branch = "release-1.9"
   name = "k8s.io/apimachinery"
+  branch = "release-1.9"
+
+[[constraint]]
+  name = "sigs.k8s.io/cluster-api"
+  branch = "master"
+
+  [[override]]
+  name = "k8s.io/client-go"
+  branch = "release-6.0"
 
 [prune]
   go-tests = true
