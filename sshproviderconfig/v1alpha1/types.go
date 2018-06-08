@@ -13,7 +13,7 @@ type SSHMachineProviderConfig struct {
 	metav1.TypeMeta `json:",inline"`
 
 	Host string `json:"host"`
-	Port string `json:"port"`
+	Port int    `json:"port"`
 
 	// The host's known SSH public keys
 	PublicKeys    []string `json:"publicKeys"`
