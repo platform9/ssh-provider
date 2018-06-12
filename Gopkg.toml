@@ -26,7 +26,6 @@
 
 # To generate code for sshproviderconfig
 required = [ "k8s.io/code-generator/cmd/deepcopy-gen" ]
-
 [[constraint]]
   name = "k8s.io/apimachinery"
   branch = "release-1.9"

@@ -32,6 +32,7 @@
   revision = "3a771d992973f24aa725d07868b467d1ddfceafb"
 
 [[projects]]
+  branch = "release-3.1"
   name = "github.com/coreos/etcd"
   packages = [
     "auth/authpb",
@@ -40,27 +41,28 @@
     "etcdserver/api/v3rpc/rpctypes",
     "etcdserver/etcdserverpb",
     "mvcc/mvccpb",
+    "pkg/fileutil",
     "pkg/pathutil",
-    "pkg/srv",
     "pkg/tlsutil",
     "pkg/transport",
-    "pkg/types",
-    "version"
+    "pkg/types"
   ]
-  revision = "56536de5511128d0c7997aa2b792a4de575da536"
-  version = "v3.3.7"
-
-[[projects]]
-  name = "github.com/coreos/go-semver"
-  packages = ["semver"]
-  revision = "8ab6407b697782a06568d4b7f1db25550ec2e4c6"
-  version = "v0.2.0"
+  revision = "fd61be4814bcc80d974b5d27d71909e1aaa6bf7a"
 
 [[projects]]
   name = "github.com/coreos/go-systemd"
-  packages = ["daemon"]
+  packages = [
+    "daemon",
+    "journal"
+  ]
   revision = "39ca1b05acc7ad1220e09f133283b8859a8b71ab"
   version = "v17"
+
+[[projects]]
+  name = "github.com/coreos/pkg"
+  packages = ["capnslog"]
+  revision = "97fdf19511ea361ae1c100dd393cc47f8dcfa1e1"
+  version = "v4"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -128,9 +130,7 @@
 [[projects]]
   name = "github.com/gogo/protobuf"
   packages = [
-    "gogoproto",
     "proto",
-    "protoc-gen-gogo/descriptor",
     "sortkeys"
   ]
   revision = "1adfc126b41513cc696b209667c8656ea7aac67c"
@@ -145,10 +145,12 @@
 [[projects]]
   name = "github.com/golang/protobuf"
   packages = [
+    "jsonpb",
     "proto",
     "ptypes",
     "ptypes/any",
     "ptypes/duration",
+    "ptypes/struct",
     "ptypes/timestamp"
   ]
   revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
@@ -186,6 +188,22 @@
   revision = "9cad4c3443a7200dd6400aef47183728de563a38"
 
 [[projects]]
+  name = "github.com/grpc-ecosystem/go-grpc-prometheus"
+  packages = ["."]
+  revision = "c225b8c3b01faf2899099b768856a9e916e5087b"
+  version = "v1.2.0"
+
+[[projects]]
+  name = "github.com/grpc-ecosystem/grpc-gateway"
+  packages = [
+    "runtime",
+    "runtime/internal",
+    "utilities"
+  ]
+  revision = "92583770e3f01b09a0d3e9bdf64321d8bebd48f2"
+  version = "v1.4.1"
+
+[[projects]]
   branch = "master"
   name = "github.com/hashicorp/golang-lru"
   packages = [
@@ -217,6 +235,12 @@
   packages = ["."]
   revision = "59fac5042749a5afb9af70e813da1dd5474f0167"
   version = "1.0.1"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/kballard/go-shellquote"
+  packages = ["."]
+  revision = "95032a82bc518f77982ea72343cc1ade730072f0"
 
 [[projects]]
   name = "github.com/kubernetes-incubator/apiserver-builder"
@@ -314,6 +338,12 @@
   packages = ["."]
   revision = "583c0c0531f06d5278b7d917446061adc344b5cd"
   version = "v1.0.1"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/tmc/scp"
+  packages = ["."]
+  revision = "f7b48647feef3e30991f2ecc16b2b9a977d9a7c3"
 
 [[projects]]
   name = "github.com/ugorji/go"
@@ -414,7 +444,6 @@
     "encoding/proto",
     "grpclb/grpc_lb_v1/messages",
     "grpclog",
-    "health/grpc_health_v1",
     "internal",
     "keepalive",
     "metadata",
@@ -797,6 +826,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f29e6b5c7bf94b949d1b7d93b5e59736f90346751156f93f520ea63c84aa4c7b"
+  inputs-digest = "0b04e824f66acb904c9ad4c2861e0366d60e60a8d6a99cc4125dd61c63cf2594"
   solver-name = "gps-cdcl"
   solver-version = 1
