@@ -20,4 +20,7 @@ dev_push: dev_image
 
 genproviderconfig:
 	go install ./vendor/k8s.io/code-generator/cmd/deepcopy-gen
-	deepcopy-gen -i ./sshproviderconfig,./sshproviderconfig/v1alpha1 -O zz_generated.deepcopy
+	deepcopy-gen \
+		--go-header-file ./boilerplate.go.txt \
+		--input-dirs ./sshproviderconfig,./sshproviderconfig/v1alpha1 \
+		--output-file-base zz_generated.deepcopy
