@@ -9,6 +9,8 @@ import (
 	kubeadmv1 "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1alpha2"
 )
 
+// SSHMachineProviderConfig defines the desired provider-specific state of the
+// machine
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type SSHMachineProviderConfig struct {
 	metav1.TypeMeta `json:",inline"`
@@ -26,24 +28,33 @@ type SSHMachineProviderConfig struct {
 	NodeConfiguration *kubeadmv1.NodeConfiguration `json:"nodeConfiguration,omitEmpty"`
 }
 
+// SSHMachineProviderStatus defines the observed provider-specific state of the
+// machine
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type SSHMachineProviderStatus struct {
 	metav1.TypeMeta `json:",inline"`
 
-	// The IP or hostname used to SSH to the machine
-	SSHHost string `json:"sshHost"`
-	// The used to SSH to the machine
-	SSHPort int `json:"sshPort"`
-	// The SSH public keys of the machine
-	SSHPublicKeys []string `json:"sshPublicKeys"`
-	// The Secret with the username and private key used to SSH to the machine
-	SSHSecretName string `json:"sshSecretName"`
+	SSHConfig SSHConfig `json:"sshConfig"`
 
-	// If the machine is a Master, this field will be populated.
+	// EtcdMember defines the observed etcd configuration of the machine.
+	// This field is populated for masters only.
 	// +optional
 	EtcdMember *EtcdMember `json:"etcdMember,omitempty"`
 }
 
+// SSHConfig specifies everything needed to ssh to a host
+type SSHConfig {
+	// The IP or hostname used to SSH to the machine
+	Host string `json:"host"`
+	// The used to SSH to the machine
+	Port int `json:"port"`
+	// The SSH public keys of the machine
+	PublicKeys []string `json:"publicKeys"`
+	// The Secret with the username and private key used to SSH to the machine
+	SecretName string `json:"secretName"`
+}
+
+// EtcdMember defines the configuration of an etcd member.
 type EtcdMember struct {
 	// ID is the member ID for this member.
 	ID uint64 `json:"ID"`

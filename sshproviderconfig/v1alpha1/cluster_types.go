@@ -10,6 +10,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// SSHClusterProviderConfig defines the desired provider-specific state of the
+// cluster
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type SSHClusterProviderConfig struct {
 	metav1.TypeMeta `json:",inline"`
@@ -37,6 +39,8 @@ type VIPConfiguration struct {
 	RouterID string `json:"routerID"`
 }
 
+// SSHClusterProviderStatus defines the observed provider-specific state of the
+// cluster
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type SSHClusterProviderStatus struct {
 	metav1.TypeMeta `json:",inline"`
