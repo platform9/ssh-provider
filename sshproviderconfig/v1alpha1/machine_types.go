@@ -43,7 +43,7 @@ type SSHMachineProviderStatus struct {
 }
 
 // SSHConfig specifies everything needed to ssh to a host
-type SSHConfig {
+type SSHConfig struct {
 	// The IP or hostname used to SSH to the machine
 	Host string `json:"host"`
 	// The used to SSH to the machine

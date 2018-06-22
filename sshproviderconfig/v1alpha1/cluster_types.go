@@ -26,7 +26,7 @@ type SSHClusterProviderConfig struct {
 	// VIPConfiguration is the configuration of the VIP for the API. If it is not
 	// specified, the VIP is not created.
 	// +optional
-	VIPConfiguration *VIPConfiguraton `json:"vipConfiguration,omitempty"`
+	VIPConfiguration *VIPConfiguration `json:"vipConfiguration,omitempty"`
 }
 
 // VIPConfiguration specifies the parameters used to provision a virtual IP
