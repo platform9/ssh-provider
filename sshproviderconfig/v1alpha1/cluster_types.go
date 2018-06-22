@@ -36,7 +36,7 @@ type VIPConfiguration struct {
 	IP net.IP `json:"ip"`
 	// The virtual router ID. Must be in the range [0, 254]. Must be unique within
 	// a single L2 network domain.
-	RouterID string `json:"routerID"`
+	RouterID int `json:"routerID"`
 }
 
 // SSHClusterProviderStatus defines the observed provider-specific state of the
