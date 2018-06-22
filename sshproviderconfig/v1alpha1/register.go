@@ -7,10 +7,11 @@ package v1alpha1
 import (
 	"bytes"
 	"fmt"
+
+	"github.com/platform9/ssh-provider/sshproviderconfig"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
-	"github.com/platform9/ssh-provider/sshproviderconfig"
 	clusterv1 "sigs.k8s.io/cluster-api/pkg/apis/cluster/v1alpha1"
 )
 
@@ -40,6 +41,9 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 	)
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&SSHClusterProviderConfig{},
+	)
+	scheme.AddKnownTypes(SchemeGroupVersion,
+		&SSHMachineProviderStatus{},
 	)
 	return nil
 }
@@ -72,7 +76,7 @@ func NewCodec() (*SSHProviderConfigCodec, error) {
 	return &codec, nil
 }
 
-func (codec *SSHProviderConfigCodec) DecodeFromProviderConfig(providerConfig clusterv1.ProviderConfig, out runtime.Object) (error) {
+func (codec *SSHProviderConfigCodec) DecodeFromProviderConfig(providerConfig clusterv1.ProviderConfig, out runtime.Object) error {
 	_, _, err := codec.decoder.Decode(providerConfig.Value.Raw, nil, out)
 	if err != nil {
 		return fmt.Errorf("decoding failed: %v", err)
@@ -87,6 +91,24 @@ func (codec *SSHProviderConfigCodec) EncodeToProviderConfig(in runtime.Object) (
 	}
 	return &clusterv1.ProviderConfig{
 		Value: &runtime.RawExtension{Raw: buf.Bytes()},
+	}, nil
+}
+
+func (codec *SSHProviderConfigCodec) DecodeFromClusterProviderStatus(providerClusterStatus clusterv1.ClusterStatus.ProviderStatus, out runtime.Object) error {
+	_, _, err := codec.decoder.Decode(providerClusterStatus.Raw, nil, out)
+	if err != nil {
+		return fmt.Errorf("decoding failed: %v", err)
+	}
+	return nil
+}
+
+func (codec *SSHProviderConfigCodec) EncodeToClusterProviderStatus(in runtime.Object) (*clusterv1.ClusterStatus.ProviderStatus, error) {
+	var buf bytes.Buffer
+	if err := codec.encoder.Encode(in, &buf); err != nil {
+		return nil, fmt.Errorf("encoding failed: %v", err)
+	}
+	return &clusterv1.ClusterStatus.ProviderStatus{
+		&runtime.RawExtension{Raw: buf.Bytes()},
 	}, nil
 }
 
