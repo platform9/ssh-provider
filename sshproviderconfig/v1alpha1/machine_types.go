@@ -6,31 +6,51 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kubeadmv1 "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1alpha2"
 )
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type SSHMachineProviderConfig struct {
 	metav1.TypeMeta `json:",inline"`
 
-	// maxPods is the number of pods that can run on this Kubelet.
-	// Dynamic Kubelet Config (beta): If dynamically updating this field, consider that
-	// changes may cause Pods to fail admission on Kubelet restart, and may change
-	// the value reported in Node.Status.Capacity[v1.ResourcePods], thus affecting
-	// future scheduling decisions. Increasing this value may also decrease performance,
-	// as more Pods can be packed into a single node.
-	// Default: 110
+	// MasterConfiguraton holds optional kubeadm configuration for a master.
+	// Values here override values in the kubeadm configuration used by the
+	// provider.
 	// +optional
-	MaxPods int32 `json:"maxPods,omitempty"`
+
+	MasterConfiguration *kubeadmv1.MasterConfiguration `json:"masterConfiguration,omitempty"`
+	// NodeConfiguraton holds optional kubeadm configuration for a node.
+	// Values here override values in the kubeadm configuration used by the
+	// provider.
+	// +optional
+	NodeConfiguration *kubeadmv1.NodeConfiguration `json:"nodeConfiguration,omitEmpty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type SSHMachineProviderStatus struct {
 	metav1.TypeMeta `json:",inline"`
 
-	Host string `json:"host"`
-	Port int    `json:"port"`
+	// The IP or hostname used to SSH to the machine
+	SSHHost string `json:"sshHost"`
+	// The used to SSH to the machine
+	SSHPort int `json:"sshPort"`
+	// The SSH public keys of the machine
+	SSHPublicKeys []string `json:"sshPublicKeys"`
+	// The Secret with the username and private key used to SSH to the machine
+	SSHSecretName string `json:"sshSecretName"`
 
-	// The host's known SSH public keys
-	PublicKeys    []string `json:"publicKeys"`
-	SSHSecretName string   `json:"sshSecretName"`
+	// If the machine is a Master, this field will be populated.
+	// +optional
+	EtcdMember *EtcdMember `json:"etcdMember,omitempty"`
+}
+
+type EtcdMember struct {
+	// ID is the member ID for this member.
+	ID uint64 `json:"ID"`
+	// Name is the human-readable name of the member.
+	Name string `json:"name"`
+	// PeerURLs is the list of URLs the member exposes to the cluster for communication.
+	PeerURLs []string `json:"peerURLs"`
+	// ClientURLs is the list of URLs the member exposes to clients for communication.
+	ClientURLs []string `json:"clientURLs"`
 }

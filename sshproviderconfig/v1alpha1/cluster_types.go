@@ -5,6 +5,8 @@ Copyright 2018 Platform 9 Systems, Inc.
 package v1alpha1
 
 import (
+	"net"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -12,38 +14,30 @@ import (
 type SSHClusterProviderConfig struct {
 	metav1.TypeMeta `json:",inline"`
 
-	CASecretName       string      `json:"caSecretName"`
-	VirtualAPIEndpoint APIEndpoint `json:"virtualAPIEndpoint"`
+	// CASecretName is the name of the Secret with the cluster CA certificate and
+	// private key. If it is not specified, the default name is derived from the
+	// cluster name. If the Secret is not present, the provider generates a
+	// self-signed one and creates the Secret.
+	// +optional
+	CASecretName string `json:"caSecretName"`
+
+	// VIPConfiguration is the configuration of the VIP for the API. If it is not
+	// specified, the VIP is not created.
+	// +optional
+	VIPConfiguration *VIPConfiguraton `json:"vipConfiguration,omitempty"`
 }
 
-// APIEndpoint represents a reachable Kubernetes API endpoint.
-type APIEndpoint struct {
-	// The hostname on which the API server is serving.
-	Host string `json:"host"`
-
-	// The port on which the API server is serving.
-	Port int `json:"port"`
+// VIPConfiguration specifies the parameters used to provision a virtual IP
+// which API servers advertise and accept requests on.
+type VIPConfiguration struct {
+	// The virtual IP.
+	IP net.IP `json:"ip"`
+	// The virtual router ID. Must be in the range [0, 254]. Must be unique within
+	// a single L2 network domain.
+	RouterID string `json:"routerID"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type SSHClusterProviderStatus struct {
 	metav1.TypeMeta `json:",inline"`
-
-	EtcdStatus EtcdStatus `json:"etcdStatus"`
-}
-
-type EtcdStatus struct {
-	Members []EtcdMember `json:"members"`
-	Token   string       `json:"token"`
-}
-
-type EtcdMember struct {
-	// ID is the member ID for this member.
-	ID uint64 `json:"ID,omitempty"`
-	// name is the human-readable name of the member. If the member is not started, the name will be an empty string.
-	Name string `json:"name,omitempty"`
-	// peerURLs is the list of URLs the member exposes to the cluster for communication.
-	PeerURLs []string `json:"peerURLs,omitempty"`
-	// clientURLs is the list of URLs the member exposes to clients for communication. If the member is not started, clientURLs will be empty.
-	ClientURLs []string `json:"clientURLs,omitempty"`
 }
