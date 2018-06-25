@@ -6,30 +6,28 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	kubeadmv1 "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1alpha2"
 )
 
 // SSHMachineProviderConfig defines the desired provider-specific state of the
-// machine
+// machine.
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type SSHMachineProviderConfig struct {
 	metav1.TypeMeta `json:",inline"`
 
-	// MasterConfiguraton holds optional kubeadm configuration for a master.
-	// Values here override values in the kubeadm configuration used by the
-	// provider.
+	// KubeletConfiguration is the kubelet configuration.
 	// +optional
+	KubeletConfiguration *KubeletConfiguration
+}
 
-	MasterConfiguration *kubeadmv1.MasterConfiguration `json:"masterConfiguration,omitempty"`
-	// NodeConfiguraton holds optional kubeadm configuration for a node.
-	// Values here override values in the kubeadm configuration used by the
-	// provider.
-	// +optional
-	NodeConfiguration *kubeadmv1.NodeConfiguration `json:"nodeConfiguration,omitEmpty"`
+// KubeletConfiguration contains the configuration for the Kubelet
+type KubeletConfiguration struct {
+	// MaxPods is the number of pods that can run on this Kubelet. If not
+	// specified, kubelet will choose its own default.
+	MaxPods int32
 }
 
 // SSHMachineProviderStatus defines the observed provider-specific state of the
-// machine
+// machine.
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type SSHMachineProviderStatus struct {
 	metav1.TypeMeta `json:",inline"`
