@@ -186,7 +186,15 @@ func (in *SSHMachineProviderConfig) DeepCopyObject() runtime.Object {
 func (in *SSHMachineProviderStatus) DeepCopyInto(out *SSHMachineProviderStatus) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	in.SSHConfig.DeepCopyInto(&out.SSHConfig)
+	if in.SSHConfig != nil {
+		in, out := &in.SSHConfig, &out.SSHConfig
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(SSHConfig)
+			(*in).DeepCopyInto(*out)
+		}
+	}
 	if in.EtcdMember != nil {
 		in, out := &in.EtcdMember, &out.EtcdMember
 		if *in == nil {

@@ -788,14 +788,17 @@
   packages = [
     "pkg/apis/cluster",
     "pkg/apis/cluster/common",
-    "pkg/apis/cluster/v1alpha1"
+    "pkg/apis/cluster/v1alpha1",
+    "pkg/client/clientset_generated/clientset/scheme",
+    "pkg/client/clientset_generated/clientset/typed/cluster/v1alpha1",
+    "pkg/util"
   ]
-  revision = "dfb9f45c80e1acd19450c18858bedfc7417b883e"
+  revision = "aeaac272fdadea993518f0616b38b167f269b9cb"
   source = "github.com/dlipovetsky/cluster-api"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8e7f0a721425b1b40f0d382a23157ca5fdb3a23fa07d628f19ea9c96083c27d1"
+  inputs-digest = "3b4032e336617c7bac0e0c7eb04126aad2fae5102f0d2aba499fb735816868fe"
   solver-name = "gps-cdcl"
   solver-version = 1

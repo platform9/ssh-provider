@@ -32,7 +32,9 @@ type KubeletConfiguration struct {
 type SSHMachineProviderStatus struct {
 	metav1.TypeMeta `json:",inline"`
 
-	SSHConfig SSHConfig `json:"sshConfig"`
+	// SSHConfig is the configuration used to SSH to the machine.
+	// +optional
+	SSHConfig *SSHConfig `json:"sshConfig"`
 
 	// EtcdMember defines the observed etcd configuration of the machine.
 	// This field is populated for masters only.

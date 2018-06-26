@@ -6,87 +6,150 @@ package machine
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
+
+	"github.com/platform9/ssh-provider/provisionedmachine"
 
 	"golang.org/x/crypto/ssh"
 
 	sshconfigv1 "github.com/platform9/ssh-provider/sshproviderconfig/v1alpha1"
+	corev1 "k8s.io/api/core/v1"
 	clusterv1 "sigs.k8s.io/cluster-api/pkg/apis/cluster/v1alpha1"
+	clusterutil "sigs.k8s.io/cluster-api/pkg/util"
 )
 
 type SSHActuator struct {
-	InsecureIgnoreHostKey  bool
-	sshProviderConfigCodec *sshconfigv1.SSHProviderConfigCodec
+	InsecureIgnoreHostKey bool
+	sshProviderCodec      *sshconfigv1.SSHProviderCodec
+
+	provisionedMachineConfigMaps []*corev1.ConfigMap
+	sshCredentials               *corev1.Secret
+	clusterCA                    *corev1.Secret
 }
 
-func NewActuator() (*SSHActuator, error) {
+func NewActuator(provisionedMachineConfigMaps []*corev1.ConfigMap, sshCredentials *corev1.Secret, clusterCA *corev1.Secret) (*SSHActuator, error) {
 	codec, err := sshconfigv1.NewCodec()
 	if err != nil {
 		return nil, err
 	}
 	return &SSHActuator{
-		sshProviderConfigCodec: codec,
+		sshProviderCodec:             codec,
+		provisionedMachineConfigMaps: provisionedMachineConfigMaps,
+		sshCredentials:               sshCredentials,
+		clusterCA:                    clusterCA,
 	}, nil
 }
 
 func (sa *SSHActuator) Create(cluster *clusterv1.Cluster, machine *clusterv1.Machine) error {
-	machineConfig, err := sa.machineproviderconfig(machine.Spec.ProviderConfig)
-	if err != nil {
-		return err
-	}
+	// caCert, ok := clusterCA.Data["ca.crt"]
+	// if !ok {
+	// 	return fmt.Errorf("error reading cluster CA certificate: %s", ok)
+	// }
+	// caKey, ok := clusterCA.Data["ca.key"]
+	// if !ok {
+	// 	return fmt.Errorf("error reading cluster CA private key: %s", ok)
+	// }
 
-	// get username and ssh private key from Secret
-	// TODO add a "secretGetter" with a uniform interface for reading from
-	// the API or the filesystem
-	username := "root"
-	key, err := ioutil.ReadFile("/Users/Daniel/coreos-privatekey")
+	cm, err := sa.selectProvisionedMachine(machine)
 	if err != nil {
-		log.Fatalf("unable to read private key: %v", err)
+		return fmt.Errorf("error finding a compatible ProvisionedMachine for Machine %q: %s", machine.Name, err)
 	}
-	signer, err := ssh.ParsePrivateKey(key)
-	if err != nil {
-		log.Fatalf("unable to parse private key: %v", err)
-	}
+	// err = sa.linkProvisionedMachineWithMachine(cm, machine)
+	// if err != nil {
+	// 	return fmt.Errorf("error linking ProvisionedMachine ConfigMap %q and Machine %q: %s", cm.Name, machine.Name, err)
+	// }
 
-	// get host address and ssh fingerprint from SSHMachineProviderConfig
-	sshConfig := &ssh.ClientConfig{
-		User: username,
-		Auth: []ssh.AuthMethod{
-			ssh.PublicKeys(signer),
-		},
+	client, err := sshClient(cm, sa.sshCredentials, sa.InsecureIgnoreHostKey)
+	if err != nil {
+		return fmt.Errorf("error creating SSH client for machine %q: %s", machine.Name, err)
 	}
-	if sa.InsecureIgnoreHostKey {
-		sshConfig.HostKeyCallback = ssh.InsecureIgnoreHostKey()
+	defer client.Close()
+
+	if clusterutil.IsMaster(machine) {
+		return sa.createMaster(cluster, machine, client)
 	} else {
-		parsedKeys := make([]ssh.PublicKey, len(machineConfig.PublicKeys))
-		for i, key := range machineConfig.PublicKeys {
-			parsedKey, _, _, _, err := ssh.ParseAuthorizedKey([]byte(key))
-			if err != nil {
-				log.Fatalf("unable to parse host public key: %v", err)
-			}
-			parsedKeys[i] = parsedKey
-		}
-		sshConfig.HostKeyCallback = FixedHostKeys(parsedKeys)
+		return sa.createNode(cluster, machine, client)
+	}
+}
+
+// TODO(dlipovetsky) Find a compatible ProvisionedMachine, or return an error
+func (sa *SSHActuator) selectProvisionedMachine(machine *clusterv1.Machine) (*corev1.ConfigMap, error) {
+	return sa.provisionedMachineConfigMaps[0], nil
+}
+
+// TODO(dlipovetsky) Persist changes
+func (sa *SSHActuator) linkProvisionedMachineWithMachine(cm *corev1.ConfigMap, machine *clusterv1.Machine) error {
+	pm, err := provisionedmachine.NewFromConfigMap(cm)
+	if err != nil {
+		return fmt.Errorf("error parsing ProvisionedMachine from ConfigMap %q: %s", cm.Name, err)
+	}
+	// Update ProvisionedMachine annotations
+	cm.Annotations["sshprovider.platform9.com/machine-name"] = machine.Name
+	// Update Machine annotations
+	machine.Annotations["sshprovider.platform9.com/provisionedmachine-name"] = cm.Name
+	// Update Machine.Status.ProviderStatus
+	sshProviderStatus := &sshconfigv1.SSHMachineProviderStatus{
+		SSHConfig: pm.SSHConfig,
+	}
+	if providerStatus, err := sa.sshProviderCodec.EncodeToProviderStatus(sshProviderStatus); err != nil {
+		return fmt.Errorf("error creating machine ProviderStatus: %s", err)
+	} else {
+		machine.Status.ProviderStatus = *providerStatus
+	}
+	return nil
+}
+
+func (sa *SSHActuator) createMaster(cluster *clusterv1.Cluster, machine *clusterv1.Machine, client *ssh.Client) error {
+	session, err := client.NewSession()
+	if err != nil {
+		log.Fatalf("error creating new SSH session for machine %q: %s", machine.Name, err)
+	}
+	out, err := session.CombinedOutput("echo writing ca cert and key")
+	if err != nil {
+		return fmt.Errorf("error invoking ssh command %s", err)
+	} else {
+		log.Println(string(out))
 	}
 
-	connection, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", machineConfig.Host, machineConfig.Port), sshConfig)
+	session, err = client.NewSession()
 	if err != nil {
-		log.Fatalf("unable to dial: %s", err)
+		log.Fatalf("error creating new SSH session for machine %q: %s", machine.Name, err)
 	}
-	defer connection.Close()
+	out, err = session.CombinedOutput("echo running nodeadm init")
+	if err != nil {
+		return fmt.Errorf("error invoking ssh command %s", err)
+	} else {
+		log.Println(string(out))
+	}
 
-	session, err := connection.NewSession()
+	session, err = client.NewSession()
 	if err != nil {
-		log.Fatalf("unable to create session: %s", err)
+		log.Fatalf("error creating new SSH session for machine %q: %s", machine.Name, err)
 	}
-	out, err := session.CombinedOutput("ls -al")
+	out, err = session.CombinedOutput("echo running etcdadm init")
 	if err != nil {
-		log.Fatalf("unable to run ls -al")
+		return fmt.Errorf("error invoking ssh command %s", err)
+	} else {
+		log.Println(string(out))
 	}
-	fmt.Println(string(out))
 
+	// TODO(dlipovetsky) Update cluster CA Secret with actual CA
+
+	return nil
+}
+
+func (sa *SSHActuator) createNode(cluster *clusterv1.Cluster, machine *clusterv1.Machine, client *ssh.Client) error {
+	session, err := client.NewSession()
+	if err != nil {
+		log.Fatalf("error creating new SSH session for machine %q: %s", machine.Name, err)
+	}
+	out, err := session.CombinedOutput("echo running nodeadm join")
+	if err != nil {
+		return fmt.Errorf("error invoking ssh command %s", err)
+	} else {
+		log.Println(out)
+	}
 	return nil
 }
 
@@ -104,13 +167,23 @@ func (sa *SSHActuator) Exists(cluster *clusterv1.Cluster, machine *clusterv1.Mac
 
 func (sa *SSHActuator) machineproviderconfig(providerConfig clusterv1.ProviderConfig) (*sshconfigv1.SSHMachineProviderConfig, error) {
 	var config sshconfigv1.SSHMachineProviderConfig
-	err := sa.sshProviderConfigCodec.DecodeFromProviderConfig(providerConfig, &config)
+	err := sa.sshProviderCodec.DecodeFromProviderConfig(providerConfig, &config)
 	if err != nil {
 		return nil, err
 	}
 	return &config, nil
 }
 
+func (sa *SSHActuator) clusterproviderconfig(providerConfig clusterv1.ProviderConfig) (*sshconfigv1.SSHClusterProviderConfig, error) {
+	var config sshconfigv1.SSHClusterProviderConfig
+	err := sa.sshProviderCodec.DecodeFromProviderConfig(providerConfig, &config)
+	if err != nil {
+		return nil, err
+	}
+	return &config, nil
+}
+
+// FixedHostKeys is a version of ssh.FixedHostKey that checks a list of SSH public keys
 func FixedHostKeys(keys []ssh.PublicKey) ssh.HostKeyCallback {
 	callbacks := make([]ssh.HostKeyCallback, len(keys))
 	for i, expectedKey := range keys {

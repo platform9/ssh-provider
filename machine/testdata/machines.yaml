@@ -1,0 +1,19 @@
+items:
+- apiVersion: "cluster.k8s.io/v1alpha1"
+  kind: Machine
+  metadata:
+    name: test-master
+    labels:
+      set: master
+  spec:
+    providerConfig:
+      value:
+        apiVersion: "sshproviderconfig/v1alpha1"
+        kind: "SSHMachineProviderConfig"
+        kubeletConfiguration:
+            maxPods: 500
+    versions:
+      kubelet: 1.
+      controlPlane: 1.9.6
+    roles:
+    - Master
