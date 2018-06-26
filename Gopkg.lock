@@ -783,6 +783,34 @@
   revision = "4cac20de16b951c103aa40c4bafbc8cefdd18a12"
 
 [[projects]]
+  branch = "release-1.9"
+  name = "k8s.io/kubernetes"
+  packages = [
+    "cmd/kubeadm/app/apis/kubeadm",
+    "cmd/kubeadm/app/apis/kubeadm/v1alpha1",
+    "cmd/kubeadm/app/constants",
+    "cmd/kubeadm/app/features",
+    "pkg/apis/core",
+    "pkg/apis/core/helper",
+    "pkg/apis/core/v1/helper",
+    "pkg/apis/core/v1/helper/qos",
+    "pkg/kubelet/apis/kubeletconfig",
+    "pkg/kubelet/apis/kubeletconfig/scheme",
+    "pkg/kubelet/apis/kubeletconfig/v1alpha1",
+    "pkg/kubelet/qos",
+    "pkg/kubelet/types",
+    "pkg/master/ports",
+    "pkg/proxy/apis/kubeproxyconfig",
+    "pkg/proxy/apis/kubeproxyconfig/scheme",
+    "pkg/proxy/apis/kubeproxyconfig/v1alpha1",
+    "pkg/registry/core/service/allocator",
+    "pkg/registry/core/service/ipallocator",
+    "pkg/util/pointer",
+    "pkg/util/version"
+  ]
+  revision = "206f6fcb4097aa7aa63876d58bd91e71c7f83878"
+
+[[projects]]
   branch = "providerstatus"
   name = "sigs.k8s.io/cluster-api"
   packages = [
@@ -799,6 +827,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3b4032e336617c7bac0e0c7eb04126aad2fae5102f0d2aba499fb735816868fe"
+  inputs-digest = "9e7f3ac73d43ac2dc1acc7d103a0e91c4dbedb66e5b0777812ad7de4e0ab5710"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -6,6 +6,8 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kubeletconfigv1alpha1 "k8s.io/kubernetes/pkg/kubelet/apis/kubeletconfig/v1alpha1"
+	kubeproxyconfigv1alpha1 "k8s.io/kubernetes/pkg/proxy/apis/kubeproxyconfig/v1alpha1"
 )
 
 // SSHMachineProviderConfig defines the desired provider-specific state of the
@@ -16,14 +18,11 @@ type SSHMachineProviderConfig struct {
 
 	// KubeletConfiguration is the kubelet configuration.
 	// +optional
-	KubeletConfiguration *KubeletConfiguration
-}
+	KubeletConfiguration *kubeletconfigv1alpha1.KubeletConfiguration
 
-// KubeletConfiguration contains the configuration for the Kubelet
-type KubeletConfiguration struct {
-	// MaxPods is the number of pods that can run on this Kubelet. If not
-	// specified, kubelet will choose its own default.
-	MaxPods int32
+	// KubeProxyConfiguration is the kube-proxy configuration
+	// +optional
+	KubeProxyConfiguration *kubeproxyconfigv1alpha1.KubeProxyConfiguration
 }
 
 // SSHMachineProviderStatus defines the observed provider-specific state of the
