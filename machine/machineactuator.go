@@ -7,8 +7,9 @@ package machine
 import (
 	"fmt"
 	"log"
-	"net"
 
+	"github.com/ghodss/yaml"
+	"github.com/pkg/sftp"
 	"github.com/platform9/ssh-provider/provisionedmachine"
 
 	"golang.org/x/crypto/ssh"
@@ -53,7 +54,7 @@ func (sa *SSHActuator) Create(cluster *clusterv1.Cluster, machine *clusterv1.Mac
 
 	cm, err := sa.selectProvisionedMachine(machine)
 	if err != nil {
-		return fmt.Errorf("error finding a compatible ProvisionedMachine for Machine %q: %s", machine.Name, err)
+		return fmt.Errorf("error creating machine %q: failed to select provisioned machine: %s", machine.Name, err)
 	}
 	// err = sa.linkProvisionedMachineWithMachine(cm, machine)
 	// if err != nil {
@@ -62,15 +63,20 @@ func (sa *SSHActuator) Create(cluster *clusterv1.Cluster, machine *clusterv1.Mac
 
 	client, err := sshClient(cm, sa.sshCredentials, sa.InsecureIgnoreHostKey)
 	if err != nil {
-		return fmt.Errorf("error creating SSH client for machine %q: %s", machine.Name, err)
+		return fmt.Errorf("error creating machine %q: failed to create SSH client: %s", machine.Name, err)
 	}
 	defer client.Close()
 
 	if clusterutil.IsMaster(machine) {
-		return sa.createMaster(cluster, machine, client)
+		if err := sa.createMaster(cluster, machine, client); err != nil {
+			return fmt.Errorf("error creating machine %q: %s", machine.Name, err)
+		}
 	} else {
-		return sa.createNode(cluster, machine, client)
+		if err := sa.createNode(cluster, machine, client); err != nil {
+			return fmt.Errorf("error creating machine %q: %s", machine.Name, err)
+		}
 	}
+	return nil
 }
 
 // TODO(dlipovetsky) Find a compatible ProvisionedMachine, or return an error
@@ -101,11 +107,38 @@ func (sa *SSHActuator) linkProvisionedMachineWithMachine(cm *corev1.ConfigMap, m
 }
 
 func (sa *SSHActuator) createMaster(cluster *clusterv1.Cluster, machine *clusterv1.Machine, client *ssh.Client) error {
-	session, err := client.NewSession()
+	var err error
+
+	masterConfiguration, err := sa.newMasterConfiguration(cluster, machine)
+	if err != nil {
+		return err
+	}
+
+	sftp, err := sftp.NewClient(client)
+	if err != nil {
+		return fmt.Errorf("error creating SFTP client: %s", err)
+	}
+	defer sftp.Close()
+	f, err := sftp.Create("/tmp/kubeadm.yaml")
+	if err != nil {
+		return fmt.Errorf("error creating kubeadm.yaml: %s", err)
+	}
+	mcb, err := yaml.Marshal(&masterConfiguration)
+	if err != nil {
+		return err
+	}
+	if _, err := f.Write(mcb); err != nil {
+		return fmt.Errorf("error writing kubeadm.yaml: %s", err)
+	}
+
+	var session *ssh.Session
+	var out []byte
+	session, err = client.NewSession()
+	defer session.Close()
 	if err != nil {
 		log.Fatalf("error creating new SSH session for machine %q: %s", machine.Name, err)
 	}
-	out, err := session.CombinedOutput("echo writing ca cert and key")
+	out, err = session.CombinedOutput("echo writing ca cert and key")
 	if err != nil {
 		return fmt.Errorf("error invoking ssh command %s", err)
 	} else {
@@ -113,10 +146,11 @@ func (sa *SSHActuator) createMaster(cluster *clusterv1.Cluster, machine *cluster
 	}
 
 	session, err = client.NewSession()
+	defer session.Close()
 	if err != nil {
 		log.Fatalf("error creating new SSH session for machine %q: %s", machine.Name, err)
 	}
-	out, err = session.CombinedOutput("echo running nodeadm init")
+	out, err = session.CombinedOutput("echo /opt/bin/etcdadm init")
 	if err != nil {
 		return fmt.Errorf("error invoking ssh command %s", err)
 	} else {
@@ -124,10 +158,11 @@ func (sa *SSHActuator) createMaster(cluster *clusterv1.Cluster, machine *cluster
 	}
 
 	session, err = client.NewSession()
+	defer session.Close()
 	if err != nil {
 		log.Fatalf("error creating new SSH session for machine %q: %s", machine.Name, err)
 	}
-	out, err = session.CombinedOutput("echo running etcdadm init")
+	out, err = session.CombinedOutput("echo /opt/bin/nodeadm init")
 	if err != nil {
 		return fmt.Errorf("error invoking ssh command %s", err)
 	} else {
@@ -169,7 +204,7 @@ func (sa *SSHActuator) machineproviderconfig(providerConfig clusterv1.ProviderCo
 	var config sshconfigv1.SSHMachineProviderConfig
 	err := sa.sshProviderCodec.DecodeFromProviderConfig(providerConfig, &config)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error decoding SSHMachineProviderConfig from ProviderConfig: %s", err)
 	}
 	return &config, nil
 }
@@ -178,25 +213,7 @@ func (sa *SSHActuator) clusterproviderconfig(providerConfig clusterv1.ProviderCo
 	var config sshconfigv1.SSHClusterProviderConfig
 	err := sa.sshProviderCodec.DecodeFromProviderConfig(providerConfig, &config)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error decoding SSHClusterProviderConfig from ProviderConfig: %s", err)
 	}
 	return &config, nil
-}
-
-// FixedHostKeys is a version of ssh.FixedHostKey that checks a list of SSH public keys
-func FixedHostKeys(keys []ssh.PublicKey) ssh.HostKeyCallback {
-	callbacks := make([]ssh.HostKeyCallback, len(keys))
-	for i, expectedKey := range keys {
-		callbacks[i] = ssh.FixedHostKey(expectedKey)
-	}
-
-	return func(hostname string, remote net.Addr, actualKey ssh.PublicKey) error {
-		for _, callback := range callbacks {
-			err := callback(hostname, remote, actualKey)
-			if err == nil {
-				return nil
-			}
-		}
-		return fmt.Errorf("host key does not match any expected keys")
-	}
 }

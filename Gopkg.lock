@@ -219,6 +219,12 @@
   version = "1.0.1"
 
 [[projects]]
+  name = "github.com/kr/fs"
+  packages = ["."]
+  revision = "1455def202f6e05b95cc7bfc7e8ae67ae5141eba"
+  version = "v0.1.0"
+
+[[projects]]
   name = "github.com/kubernetes-incubator/apiserver-builder"
   packages = ["pkg/builders"]
   revision = "14201e804a58a140011a0044b15331f477535f91"
@@ -275,6 +281,18 @@
   packages = ["."]
   revision = "5f041e8faa004a95c88a202771f4cc3e991971e6"
   version = "v2.0.1"
+
+[[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
+
+[[projects]]
+  name = "github.com/pkg/sftp"
+  packages = ["."]
+  revision = "57673e38ea946592a59c26592b7e6fbda646975b"
+  version = "1.8.0"
 
 [[projects]]
   name = "github.com/prometheus/client_golang"
@@ -827,6 +845,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9e7f3ac73d43ac2dc1acc7d103a0e91c4dbedb66e5b0777812ad7de4e0ab5710"
+  inputs-digest = "219916a319abdff9e34cd1d7e376e847b482f3ba45f9cc388ededf1752b4cd93"
   solver-name = "gps-cdcl"
   solver-version = 1

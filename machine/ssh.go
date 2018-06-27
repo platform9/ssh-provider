@@ -7,6 +7,7 @@ package machine
 import (
 	"fmt"
 	"log"
+	"net"
 
 	"github.com/platform9/ssh-provider/provisionedmachine"
 	"golang.org/x/crypto/ssh"
@@ -55,4 +56,22 @@ func sshClient(cm *corev1.ConfigMap, sshCredentials *corev1.Secret, insecureIgno
 		log.Fatalf("unable to dial %s:%d: %s", pm.SSHConfig.Host, pm.SSHConfig.Port, err)
 	}
 	return client, nil
+}
+
+// FixedHostKeys is a version of ssh.FixedHostKey that checks a list of SSH public keys
+func FixedHostKeys(keys []ssh.PublicKey) ssh.HostKeyCallback {
+	callbacks := make([]ssh.HostKeyCallback, len(keys))
+	for i, expectedKey := range keys {
+		callbacks[i] = ssh.FixedHostKey(expectedKey)
+	}
+
+	return func(hostname string, remote net.Addr, actualKey ssh.PublicKey) error {
+		for _, callback := range callbacks {
+			err := callback(hostname, remote, actualKey)
+			if err == nil {
+				return nil
+			}
+		}
+		return fmt.Errorf("host key does not match any expected keys")
+	}
 }

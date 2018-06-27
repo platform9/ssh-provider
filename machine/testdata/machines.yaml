@@ -11,9 +11,9 @@ items:
         apiVersion: "sshproviderconfig/v1alpha1"
         kind: "SSHMachineProviderConfig"
         kubeletConfiguration:
-            maxPods: 500
+          maxPods: 500
     versions:
-      kubelet: 1.
-      controlPlane: 1.9.6
+      kubelet: 1.10.4
+      controlPlane: 1.10.4
     roles:
     - Master

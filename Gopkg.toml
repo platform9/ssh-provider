@@ -51,3 +51,7 @@ required = [ "k8s.io/code-generator/cmd/deepcopy-gen" ]
 [[constraint]]
   name = "k8s.io/kubernetes"
   branch = "release-1.9"
+
+[[constraint]]
+  name = "github.com/pkg/sftp"
+  version = "1.8.0"
