@@ -1,12 +1,8 @@
 package machine
 
 import (
-	"encoding/json"
 	"fmt"
-	"strings"
 
-	"github.com/Jeffail/gabs"
-	"github.com/ghodss/yaml"
 	sshconfigv1 "github.com/platform9/ssh-provider/sshproviderconfig/v1alpha1"
 	kubeadmv1 "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1alpha1"
 	kubeletconfigv1alpha1 "k8s.io/kubernetes/pkg/kubelet/apis/kubeletconfig/v1alpha1"
@@ -66,27 +62,4 @@ func (sa *SSHActuator) NewMasterConfiguration(cluster *clusterv1.Cluster, machin
 
 	kubeadmv1.SetDefaults_MasterConfiguration(masterConfiguration)
 	return masterConfiguration, nil
-}
-
-func MarshalToYAMLWithFixedKubeProxyFeatureGates(masterConfiguration *kubeadmv1.MasterConfiguration) ([]byte, error) {
-	j, err := json.Marshal(&masterConfiguration)
-	if err != nil {
-		return nil, fmt.Errorf("error marshalling kubeadm configuration: %s", err)
-	}
-	p, err := gabs.ParseJSON(j)
-	fgString, ok := p.Path("kubeProxy.config.featureGates").Data().(string)
-	if !ok {
-		return nil, fmt.Errorf("error marshalling kubeadm configuration: error parsing kubeProxy.config.featureGates: %s", err)
-	}
-	p.ObjectP("kubeProxy.config.featureGates")
-	if strings.Contains(fgString, ",") {
-		for _, gate := range strings.Split(fgString, ",") {
-			p.SetP(true, fmt.Sprintf("kubeProxy.config.featureGates.%s", gate))
-		}
-	}
-	y, err := yaml.JSONToYAML(p.Bytes())
-	if err != nil {
-		return nil, fmt.Errorf("error marshalling kubeadm configuration: %s", err)
-	}
-	return y, nil
 }

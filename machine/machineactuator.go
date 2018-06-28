@@ -66,8 +66,12 @@ func (sa *SSHActuator) Create(cluster *clusterv1.Cluster, machine *clusterv1.Mac
 	}
 	defer client.Close()
 
+	pm, err := provisionedmachine.NewFromConfigMap(cm)
+	if err != nil {
+		return fmt.Errorf("error parsing ProvisionedMachine from ConfigMap %q: %s", cm.Name, err)
+	}
 	if clusterutil.IsMaster(machine) {
-		if err := sa.createMaster(cluster, machine, client); err != nil {
+		if err := sa.createMaster(pm, cluster, machine, client); err != nil {
 			return fmt.Errorf("error creating machine %q: %s", machine.Name, err)
 		}
 	} else {
@@ -105,15 +109,12 @@ func (sa *SSHActuator) linkProvisionedMachineWithMachine(cm *corev1.ConfigMap, m
 	return nil
 }
 
-func (sa *SSHActuator) createMaster(cluster *clusterv1.Cluster, machine *clusterv1.Machine, client *ssh.Client) error {
+func (sa *SSHActuator) createMaster(pm *provisionedmachine.ProvisionedMachine, cluster *clusterv1.Cluster, machine *clusterv1.Machine, client *ssh.Client) error {
 	var err error
 
-	masterConfiguration, err := sa.NewMasterConfiguration(cluster, machine)
-	if err != nil {
-		return err
-	}
-	// mcb, err := yaml.Marshal(masterConfiguration)
-	mcb, err := MarshalToYAMLWithFixedKubeProxyFeatureGates(masterConfiguration)
+	nodeadmConfiguration, err := sa.NewNodeadmConfiguration(pm, cluster, machine)
+
+	mcb, err := MarshalToYAMLWithFixedKubeProxyFeatureGates(nodeadmConfiguration)
 	if err != nil {
 		return err
 	}
@@ -124,7 +125,7 @@ func (sa *SSHActuator) createMaster(cluster *clusterv1.Cluster, machine *cluster
 	}
 	defer sftp.Close()
 
-	f, err := sftp.Create("/tmp/kubeadm.yaml")
+	f, err := sftp.Create("/tmp/nodeadm.yaml")
 	if err != nil {
 		return fmt.Errorf("error creating kubeadm.yaml: %s", err)
 	}
@@ -151,7 +152,7 @@ func (sa *SSHActuator) createMaster(cluster *clusterv1.Cluster, machine *cluster
 	if err != nil {
 		log.Fatalf("error creating new SSH session for machine %q: %s", machine.Name, err)
 	}
-	out, err = session.CombinedOutput("echo /opt/bin/etcdadm init")
+	out, err = session.CombinedOutput("/opt/bin/etcdadm init")
 	if err != nil {
 		return fmt.Errorf("error invoking ssh command %s", err)
 	} else {
@@ -163,7 +164,7 @@ func (sa *SSHActuator) createMaster(cluster *clusterv1.Cluster, machine *cluster
 	if err != nil {
 		log.Fatalf("error creating new SSH session for machine %q: %s", machine.Name, err)
 	}
-	out, err = session.CombinedOutput("echo /opt/bin/nodeadm init")
+	out, err = session.CombinedOutput("/opt/bin/nodeadm init --cfg /tmp/nodeadm.yaml")
 	if err != nil {
 		return fmt.Errorf("error invoking ssh command %s", err)
 	} else {
