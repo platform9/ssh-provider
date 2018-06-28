@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/ghodss/yaml"
 	"github.com/pkg/sftp"
 	"github.com/platform9/ssh-provider/provisionedmachine"
 
@@ -109,7 +108,12 @@ func (sa *SSHActuator) linkProvisionedMachineWithMachine(cm *corev1.ConfigMap, m
 func (sa *SSHActuator) createMaster(cluster *clusterv1.Cluster, machine *clusterv1.Machine, client *ssh.Client) error {
 	var err error
 
-	masterConfiguration, err := sa.newMasterConfiguration(cluster, machine)
+	masterConfiguration, err := sa.NewMasterConfiguration(cluster, machine)
+	if err != nil {
+		return err
+	}
+	// mcb, err := yaml.Marshal(masterConfiguration)
+	mcb, err := MarshalToYAMLWithFixedKubeProxyFeatureGates(masterConfiguration)
 	if err != nil {
 		return err
 	}
@@ -119,13 +123,10 @@ func (sa *SSHActuator) createMaster(cluster *clusterv1.Cluster, machine *cluster
 		return fmt.Errorf("error creating SFTP client: %s", err)
 	}
 	defer sftp.Close()
+
 	f, err := sftp.Create("/tmp/kubeadm.yaml")
 	if err != nil {
 		return fmt.Errorf("error creating kubeadm.yaml: %s", err)
-	}
-	mcb, err := yaml.Marshal(&masterConfiguration)
-	if err != nil {
-		return err
 	}
 	if _, err := f.Write(mcb); err != nil {
 		return fmt.Errorf("error writing kubeadm.yaml: %s", err)
