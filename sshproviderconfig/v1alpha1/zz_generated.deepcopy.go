@@ -92,6 +92,13 @@ func (in *SSHClusterProviderConfig) DeepCopyObject() runtime.Object {
 func (in *SSHClusterProviderStatus) DeepCopyInto(out *SSHClusterProviderStatus) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
+	if in.EtcdMembers != nil {
+		in, out := &in.EtcdMembers, &out.EtcdMembers
+		*out = make([]EtcdMember, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
 	return
 }
 
