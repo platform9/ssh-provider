@@ -1,6 +1,8 @@
 items:
 - apiVersion: v1
   kind: ConfigMap
+  metadata:
+    name: "provisionedmachine-10.4.252.52"
   data:
     provisionedMachine: |
       sshConfig:
@@ -11,5 +13,35 @@ items:
         - "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBLd8oe2tsyRTuctnUbIRAQMzbe00+E9IlPDi7znwXf5uOmIPKiG641tWEfCw1HIJBz10jkxljqNG+4zbOjFnhqg= root@localhost"
         - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMlvMz8+NI/SxOkQCmNZXFdDYuJ+sRgBLWCEWGPTloEn root@localhost"
         - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDc2MCBwSo9MONFrdmNV+ouzAZIY83f+S/SUQUuWuIHy5lmtXVkBJFSK/3meYZQVoxVIQKyUshRG+6lQ2lwOrPY3UoMiX7ezYX3d7Zb594cHJ7lxj38I0oRJpllYF6xjIebHG7Sl8OEBw/eWu94+ISGmTGokxviBBJ9Rhkic3/NE8Kf0K62WoXtiHiOdhCPw9vSz3j1w/7KdN0hKxzEmRsBxBiu4aOnBKTBAYyys0Mc6F6pfFkzEG/q14Qn2aje325mnS+FiKKZcxEZiHtrqe220jYbvsOxEsYw3Iz6jWsj5kz4EMYYFj0cSiLW2b7ioK6nsIYwBgLn1Wii9SiW5+ib root@localhost"
+        secretName: ssh-credentials
+      vipNetworkInterface: "eth0"
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: "provisionedmachine-10.4.252.159"
+  data:
+    provisionedMachine: |
+      sshConfig:
+        host: "10.4.252.159"
+        port: 22
+        publicKeys:
+        - ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBLd8oe2tsyRTuctnUbIRAQMzbe00+E9IlPDi7znwXf5uOmIPKiG641tWEfCw1HIJBz10jkxljqNG+4zbOjFnhqg= root@localhost
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMlvMz8+NI/SxOkQCmNZXFdDYuJ+sRgBLWCEWGPTloEn root@localhost
+        - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDc2MCBwSo9MONFrdmNV+ouzAZIY83f+S/SUQUuWuIHy5lmtXVkBJFSK/3meYZQVoxVIQKyUshRG+6lQ2lwOrPY3UoMiX7ezYX3d7Zb594cHJ7lxj38I0oRJpllYF6xjIebHG7Sl8OEBw/eWu94+ISGmTGokxviBBJ9Rhkic3/NE8Kf0K62WoXtiHiOdhCPw9vSz3j1w/7KdN0hKxzEmRsBxBiu4aOnBKTBAYyys0Mc6F6pfFkzEG/q14Qn2aje325mnS+FiKKZcxEZiHtrqe220jYbvsOxEsYw3Iz6jWsj5kz4EMYYFj0cSiLW2b7ioK6nsIYwBgLn1Wii9SiW5+ib root@localhost
+        secretName: ssh-credentials
+      vipNetworkInterface: "eth0"
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: "provisionedmachine-10.4.252.171"
+  data:
+    provisionedMachine: |
+      sshConfig:
+        host: "10.4.252.171"
+        port: 22
+        publicKeys:
+        - ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBLd8oe2tsyRTuctnUbIRAQMzbe00+E9IlPDi7znwXf5uOmIPKiG641tWEfCw1HIJBz10jkxljqNG+4zbOjFnhqg= root@localhost
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMlvMz8+NI/SxOkQCmNZXFdDYuJ+sRgBLWCEWGPTloEn root@localhost
+        - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDc2MCBwSo9MONFrdmNV+ouzAZIY83f+S/SUQUuWuIHy5lmtXVkBJFSK/3meYZQVoxVIQKyUshRG+6lQ2lwOrPY3UoMiX7ezYX3d7Zb594cHJ7lxj38I0oRJpllYF6xjIebHG7Sl8OEBw/eWu94+ISGmTGokxviBBJ9Rhkic3/NE8Kf0K62WoXtiHiOdhCPw9vSz3j1w/7KdN0hKxzEmRsBxBiu4aOnBKTBAYyys0Mc6F6pfFkzEG/q14Qn2aje325mnS+FiKKZcxEZiHtrqe220jYbvsOxEsYw3Iz6jWsj5kz4EMYYFj0cSiLW2b7ioK6nsIYwBgLn1Wii9SiW5+ib root@localhost
         secretName: ssh-credentials
       vipNetworkInterface: "eth0"

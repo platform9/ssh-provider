@@ -23,17 +23,32 @@ func TestCreateMaster(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	sshCreds, err := util.SecretFromFile("./testdata/sshcredentials-secret.yaml")
+	sshCreds, err := util.SecretFromFile("./testdata/ssh-credentials.yaml")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	clusterCA, err := util.SecretFromFile("./testdata/clusterca-secret.yaml")
+	etcdCA, err := util.SecretFromFile("./testdata/etcd-ca.yaml")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	sa, err := machine.NewActuator(cms, sshCreds, clusterCA)
+	apiServerCA, err := util.SecretFromFile("./testdata/apiserver-ca.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	frontProxyCA, err := util.SecretFromFile("./testdata/front-proxy-ca.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	serviceAccountKey, err := util.SecretFromFile("./testdata/serviceaccount-key.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	sa, err := machine.NewActuator(cms, sshCreds, etcdCA, apiServerCA, frontProxyCA, serviceAccountKey)
 	if err != nil {
 		t.Fatal(err)
 	}

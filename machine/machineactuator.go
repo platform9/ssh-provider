@@ -25,10 +25,18 @@ type SSHActuator struct {
 
 	provisionedMachineConfigMaps []*corev1.ConfigMap
 	sshCredentials               *corev1.Secret
-	clusterCA                    *corev1.Secret
+	etcdCA                       *corev1.Secret
+	apiServerCA                  *corev1.Secret
+	frontProxyCA                 *corev1.Secret
+	serviceAccountKey            *corev1.Secret
 }
 
-func NewActuator(provisionedMachineConfigMaps []*corev1.ConfigMap, sshCredentials *corev1.Secret, clusterCA *corev1.Secret) (*SSHActuator, error) {
+func NewActuator(provisionedMachineConfigMaps []*corev1.ConfigMap,
+	sshCredentials *corev1.Secret,
+	etcdCA *corev1.Secret,
+	apiServerCA *corev1.Secret,
+	frontProxyCA *corev1.Secret,
+	serviceAccountKey *corev1.Secret) (*SSHActuator, error) {
 	codec, err := sshconfigv1.NewCodec()
 	if err != nil {
 		return nil, err
@@ -37,7 +45,10 @@ func NewActuator(provisionedMachineConfigMaps []*corev1.ConfigMap, sshCredential
 		sshProviderCodec:             codec,
 		provisionedMachineConfigMaps: provisionedMachineConfigMaps,
 		sshCredentials:               sshCredentials,
-		clusterCA:                    clusterCA,
+		etcdCA:                       etcdCA,
+		apiServerCA:                  apiServerCA,
+		frontProxyCA:                 frontProxyCA,
+		serviceAccountKey:            serviceAccountKey,
 	}, nil
 }
 

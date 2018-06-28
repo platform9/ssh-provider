@@ -5,6 +5,9 @@ private_key_file=$2
 cat <<EOF
 apiVersion: v1
 kind: Secret
+type: kubernetes.io/ssh-auth
+metadata:
+  name: ssh-credentials
 data:
   username: $(echo -n "$username" | base64 | tr -d '\n')
   privateKey: $(cat "$private_key_file" | base64 | tr -d '\n')
