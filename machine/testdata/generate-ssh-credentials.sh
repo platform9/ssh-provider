@@ -10,5 +10,5 @@ metadata:
   name: ssh-credentials
 data:
   username: $(echo -n "$username" | base64 | tr -d '\n')
-  privateKey: $(cat "$private_key_file" | base64 | tr -d '\n')
+  ssh-privatekey: $(cat "$private_key_file" | base64 | tr -d '\n')
 EOF

@@ -24,7 +24,7 @@ func sshClient(cm *corev1.ConfigMap, sshCredentials *corev1.Secret, insecureIgno
 	if !ok {
 		return nil, fmt.Errorf("error reading SSH username")
 	}
-	sshPrivateKey, ok := sshCredentials.Data["privateKey"]
+	sshPrivateKey, ok := sshCredentials.Data["ssh-privatekey"]
 	if !ok {
 		return nil, fmt.Errorf("error reading SSH private key")
 	}
