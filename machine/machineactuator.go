@@ -5,6 +5,7 @@ Copyright 2018 Platform 9 Systems, Inc.
 package machine
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -84,6 +85,9 @@ func (sa *SSHActuator) createMaster(pm *provisionedmachine.ProvisionedMachine, c
 	var err error
 
 	nodeadmConfiguration, err := sa.NewNodeadmConfiguration(pm, cluster, machine)
+	if err != nil {
+		return err
+	}
 
 	mcb, err := MarshalToYAMLWithFixedKubeProxyFeatureGates(nodeadmConfiguration)
 	if err != nil {
@@ -109,7 +113,7 @@ func (sa *SSHActuator) createMaster(pm *provisionedmachine.ProvisionedMachine, c
 	session, err = client.NewSession()
 	defer session.Close()
 	if err != nil {
-		log.Fatalf("error creating new SSH session for machine %q: %s", machine.Name, err)
+		return fmt.Errorf("error creating new SSH session for machine %q: %s", machine.Name, err)
 	}
 	out, err = session.CombinedOutput("echo writing ca cert and key")
 	if err != nil {
@@ -120,7 +124,7 @@ func (sa *SSHActuator) createMaster(pm *provisionedmachine.ProvisionedMachine, c
 	session, err = client.NewSession()
 	defer session.Close()
 	if err != nil {
-		log.Fatalf("error creating new SSH session for machine %q: %s", machine.Name, err)
+		return fmt.Errorf("error creating new SSH session for machine %q: %s", machine.Name, err)
 	}
 	out, err = session.CombinedOutput("/opt/bin/etcdadm init")
 	if err != nil {
@@ -131,7 +135,28 @@ func (sa *SSHActuator) createMaster(pm *provisionedmachine.ProvisionedMachine, c
 	session, err = client.NewSession()
 	defer session.Close()
 	if err != nil {
-		log.Fatalf("error creating new SSH session for machine %q: %s", machine.Name, err)
+		return fmt.Errorf("error creating new SSH session for machine %q: %s", machine.Name, err)
+	}
+	out, err = session.CombinedOutput("/opt/bin/etcdadm info")
+	if err != nil {
+		return fmt.Errorf("error invoking ssh command %s", err)
+	}
+	mps := &sshconfigv1.SSHMachineProviderStatus{}
+	sa.sshProviderCodec.DecodeFromProviderStatus(machine.Status.ProviderStatus, mps)
+	err = json.Unmarshal(out, mps)
+	if err != nil {
+		return fmt.Errorf("error reading etcdadm info: %s", err)
+	}
+	ps, err := sa.sshProviderCodec.EncodeToProviderStatus(mps)
+	if err != nil {
+		return fmt.Errorf("error encoding machine provider status:", err)
+	}
+	machine.Status.ProviderStatus = *ps
+
+	session, err = client.NewSession()
+	defer session.Close()
+	if err != nil {
+		return fmt.Errorf("error creating new SSH session for machine %q: %s", machine.Name, err)
 	}
 	out, err = session.CombinedOutput("/opt/bin/nodeadm init --cfg /tmp/nodeadm.yaml")
 	if err != nil {
@@ -147,7 +172,7 @@ func (sa *SSHActuator) createMaster(pm *provisionedmachine.ProvisionedMachine, c
 func (sa *SSHActuator) createNode(cluster *clusterv1.Cluster, machine *clusterv1.Machine, client *ssh.Client) error {
 	session, err := client.NewSession()
 	if err != nil {
-		log.Fatalf("error creating new SSH session for machine %q: %s", machine.Name, err)
+		return fmt.Errorf("error creating new SSH session for machine %q: %s", machine.Name, err)
 	}
 	out, err := session.CombinedOutput("echo running nodeadm join")
 	if err != nil {
