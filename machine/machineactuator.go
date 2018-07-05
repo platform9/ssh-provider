@@ -141,15 +141,18 @@ func (sa *SSHActuator) createMaster(pm *provisionedmachine.ProvisionedMachine, c
 	if err != nil {
 		return fmt.Errorf("error invoking ssh command %s", err)
 	}
-	mps := &sshconfigv1.SSHMachineProviderStatus{}
-	sa.sshProviderCodec.DecodeFromProviderStatus(machine.Status.ProviderStatus, mps)
-	err = json.Unmarshal(out, mps)
+	etcdMember := sshconfigv1.EtcdMember{}
+	err = json.Unmarshal(out, &etcdMember)
 	if err != nil {
 		return fmt.Errorf("error reading etcdadm info: %s", err)
 	}
+	mps := &sshconfigv1.SSHMachineProviderStatus{
+		EtcdMember: &etcdMember,
+	}
+	sa.sshProviderCodec.DecodeFromProviderStatus(machine.Status.ProviderStatus, mps)
 	ps, err := sa.sshProviderCodec.EncodeToProviderStatus(mps)
 	if err != nil {
-		return fmt.Errorf("error encoding machine provider status:", err)
+		return fmt.Errorf("error encoding machine provider status: %s", err)
 	}
 	machine.Status.ProviderStatus = *ps
 
