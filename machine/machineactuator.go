@@ -12,6 +12,8 @@ import (
 	"github.com/pkg/sftp"
 	"github.com/platform9/ssh-provider/provisionedmachine"
 
+	"path/filepath"
+
 	"golang.org/x/crypto/ssh"
 
 	sshconfigv1 "github.com/platform9/ssh-provider/sshproviderconfig/v1alpha1"
@@ -81,6 +83,10 @@ func (sa *SSHActuator) Create(cluster *clusterv1.Cluster, machine *clusterv1.Mac
 	return nil
 }
 
+func chooseEtcdEndpoint(members []sshconfigv1.EtcdMember) string {
+	return members[0].ClientURLs[0]
+}
+
 func (sa *SSHActuator) createMaster(pm *provisionedmachine.ProvisionedMachine, cluster *clusterv1.Cluster, machine *clusterv1.Machine, client *ssh.Client) error {
 	var err error
 
@@ -107,6 +113,7 @@ func (sa *SSHActuator) createMaster(pm *provisionedmachine.ProvisionedMachine, c
 	if _, err := f.Write(mcb); err != nil {
 		return fmt.Errorf("error writing kubeadm.yaml: %s", err)
 	}
+	sa.writeCAs(sftp)
 
 	var session *ssh.Session
 	var out []byte
@@ -126,7 +133,19 @@ func (sa *SSHActuator) createMaster(pm *provisionedmachine.ProvisionedMachine, c
 	if err != nil {
 		return fmt.Errorf("error creating new SSH session for machine %q: %s", machine.Name, err)
 	}
-	out, err = session.CombinedOutput("/opt/bin/etcdadm init")
+	clusterProviderStatus := sshconfigv1.SSHClusterProviderStatus{}
+	if cluster.Status.ProviderStatus.Value != nil {
+		err = sa.sshProviderCodec.DecodeFromProviderStatus(cluster.Status.ProviderStatus, &clusterProviderStatus)
+	}
+	if err != nil {
+		return fmt.Errorf("error decoding cluster provider status %v\n", err)
+	}
+	if len(clusterProviderStatus.EtcdMembers) > 0 {
+		member := chooseEtcdEndpoint(clusterProviderStatus.EtcdMembers)
+		out, err = session.CombinedOutput(fmt.Sprintf("/opt/bin/etcdadm join %s", member))
+	} else {
+		out, err = session.CombinedOutput("/opt/bin/etcdadm init")
+	}
 	if err != nil {
 		return fmt.Errorf("error invoking ssh command %s", err)
 	}
@@ -166,10 +185,62 @@ func (sa *SSHActuator) createMaster(pm *provisionedmachine.ProvisionedMachine, c
 		return fmt.Errorf("error invoking ssh command %s", err)
 	}
 	log.Println(string(out))
-
-	// TODO(dlipovetsky) Update cluster CA Secret with actual CA
-
 	return nil
+}
+
+func writeCA(sftp *sftp.Client, data []byte, fileName string) error {
+	f, err := sftp.Create(fileName)
+	if err != nil {
+		return fmt.Errorf("error creating file: %s, %v", fileName, err)
+	}
+	if _, err := f.Write(data); err != nil {
+		return fmt.Errorf("error writing file: %s, %v", fileName, err)
+	}
+	return nil
+}
+
+func (sa *SSHActuator) writeCAs(sftp *sftp.Client) error {
+	basePath := "/etc/kubernetes/pki"
+	err := sftp.MkdirAll(basePath)
+	if err != nil {
+		return fmt.Errorf("error create remote directory %s, %v", basePath, err)
+	}
+	err = writeCA(sftp, sa.frontProxyCA.Data["tls.key"], filepath.Join(basePath, "front-proxy-ca.key"))
+	if err != nil {
+		return err
+	}
+	err = writeCA(sftp, sa.frontProxyCA.Data["tls.crt"], filepath.Join(basePath, "front-proxy-ca.crt"))
+	if err != nil {
+		return err
+	}
+	err = writeCA(sftp, sa.apiServerCA.Data["tls.key"], filepath.Join(basePath, "ca.key"))
+	if err != nil {
+		return err
+	}
+	err = writeCA(sftp, sa.apiServerCA.Data["tls.crt"], filepath.Join(basePath, "ca.crt"))
+	if err != nil {
+		return err
+	}
+	err = writeCA(sftp, sa.serviceAccountKey.Data["publickey"], filepath.Join(basePath, "sa.pub"))
+	if err != nil {
+		return err
+	}
+	err = writeCA(sftp, sa.serviceAccountKey.Data["privatekey"], filepath.Join(basePath, "sa.key"))
+	if err != nil {
+		return err
+	}
+
+	basePath = "/etc/etcd/pki"
+	sftp.MkdirAll(basePath)
+	if err != nil {
+		return fmt.Errorf("error create remote directory %s, %v", basePath, err)
+	}
+	err = writeCA(sftp, sa.etcdCA.Data["tls.key"], filepath.Join(basePath, "ca.key"))
+	if err != nil {
+		return err
+	}
+	err = writeCA(sftp, sa.etcdCA.Data["tls.crt"], filepath.Join(basePath, "ca.crt"))
+	return err
 }
 
 func (sa *SSHActuator) createNode(cluster *clusterv1.Cluster, machine *clusterv1.Machine, client *ssh.Client) error {
