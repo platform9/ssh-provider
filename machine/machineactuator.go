@@ -268,6 +268,32 @@ func getAPIEndPoint(cluster *clusterv1.Cluster) string {
 }
 
 func (sa *SSHActuator) Delete(cluster *clusterv1.Cluster, machine *clusterv1.Machine) error {
+	client, err := sshClient(sa.provisionedMachineConfigMap, sa.sshCredentials, sa.InsecureIgnoreHostKey)
+	if err != nil {
+		return fmt.Errorf("error deleting machine %q: failed to create SSH client: %s", machine.Name, err)
+	}
+	defer client.Close()
+	var session *ssh.Session
+	var out []byte
+	session, err = client.NewSession()
+	defer session.Close()
+	if err != nil {
+		return fmt.Errorf("error creating new SSH session for machine %q: %s", machine.Name, err)
+	}
+	cmd := "/opt/bin/nodeadm reset"
+	out, err = session.CombinedOutput(cmd)
+	if err != nil {
+		return fmt.Errorf("error invoking %q: %v", cmd, err)
+	}
+	log.Println(string(out))
+	if clusterutil.IsMaster(machine) {
+		cmd := "/opt/bin/etcdadm reset"
+		out, err := session.CombinedOutput(cmd)
+		if err != nil {
+			return fmt.Errorf("error invoking %q: %v", cmd, err)
+		}
+		log.Println(string(out))
+	}
 	return nil
 }
 
