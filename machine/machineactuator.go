@@ -139,6 +139,7 @@ func (sa *SSHActuator) createMaster(pm *provisionedmachine.ProvisionedMachine, c
 		return fmt.Errorf("error creating new SSH session for machine %q: %s", machine.Name, err)
 	}
 	defer session.Close()
+	log.Printf("Running %q on machine %s. This may take a few minutes.", cmd, machine.Name)
 	out, err = session.CombinedOutput(cmd)
 	if err != nil {
 		return fmt.Errorf("error invoking ssh command %s", err)
@@ -176,7 +177,9 @@ func (sa *SSHActuator) createMaster(pm *provisionedmachine.ProvisionedMachine, c
 		return fmt.Errorf("error creating new SSH session for machine %q: %s", machine.Name, err)
 	}
 	defer session.Close()
-	out, err = session.CombinedOutput("/opt/bin/nodeadm init --cfg /tmp/nodeadm.yaml")
+	cmd = "/opt/bin/nodeadm init --cfg /tmp/nodeadm.yaml"
+	log.Printf("Running %q on machine %s. This may take a few minutes.", cmd, machine.Name)
+	out, err = session.CombinedOutput(cmd)
 	if err != nil {
 		return fmt.Errorf("error invoking ssh command %s", err)
 	}
@@ -252,7 +255,7 @@ func (sa *SSHActuator) createNode(cluster *clusterv1.Cluster, machine *clusterv1
 		getAPIEndPoint(cluster),
 		string(sa.clusterToken.Data["token"]),
 		string(sa.clusterToken.Data["cahash"]))
-	log.Printf("Nodeadm join command = %s", cmd)
+	log.Printf("Running %q on machine %s. This may take a few minutes.", cmd, machine.Name)
 	out, err := session.CombinedOutput(cmd)
 	if err != nil {
 		return fmt.Errorf("error invoking ssh command %s", err)
@@ -278,6 +281,7 @@ func (sa *SSHActuator) Delete(cluster *clusterv1.Cluster, machine *clusterv1.Mac
 	}
 	defer session.Close()
 	cmd := "/opt/bin/nodeadm reset"
+	log.Printf("Running %q on machine %s. This may take a few minutes.", cmd, machine.Name)
 	out, err := session.CombinedOutput(cmd)
 	if err != nil {
 		return fmt.Errorf("error invoking ssh command %q: %v", cmd, err)
@@ -291,6 +295,7 @@ func (sa *SSHActuator) Delete(cluster *clusterv1.Cluster, machine *clusterv1.Mac
 		}
 		defer session.Close()
 		cmd := "/opt/bin/etcdadm reset"
+		log.Printf("Running %q on machine %s. This may take a few minutes.", cmd, machine.Name)
 		out, err := session.CombinedOutput(cmd)
 		if err != nil {
 			return fmt.Errorf("error invoking ssh command %q: %v", cmd, err)
