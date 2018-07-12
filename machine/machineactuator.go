@@ -251,6 +251,7 @@ func (sa *SSHActuator) createNode(cluster *clusterv1.Cluster, machine *clusterv1
 	if err != nil {
 		return fmt.Errorf("error creating new SSH session for machine %q: %s", machine.Name, err)
 	}
+	defer session.Close()
 	cmd := fmt.Sprintf("/opt/bin/nodeadm join --master %s --token %s --cahash %s",
 		getAPIEndPoint(cluster),
 		string(sa.clusterToken.Data["token"]),
