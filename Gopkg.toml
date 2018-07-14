@@ -56,6 +56,3 @@ required = [ "k8s.io/code-generator/cmd/deepcopy-gen" ]
   name = "github.com/pkg/sftp"
   version = "1.8.0"
 
-[[constraint]]
-  name = "github.com/Jeffail/gabs"
-  version = "1.1.0"
