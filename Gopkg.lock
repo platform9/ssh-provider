@@ -8,12 +8,6 @@
   revision = "75cd24fc2f2c2a2088577d12123ddee5f54e0675"
 
 [[projects]]
-  name = "github.com/Jeffail/gabs"
-  packages = ["."]
-  revision = "7a0fed31069aba77993a518cc2f37b28ee7aa883"
-  version = "1.1"
-
-[[projects]]
   name = "github.com/NYTimes/gziphandler"
   packages = ["."]
   revision = "2600fb119af974220d3916a5916d6e31176aac1b"
@@ -810,27 +804,18 @@
   branch = "release-1.9"
   name = "k8s.io/kubernetes"
   packages = [
-    "cmd/kubeadm/app/apis/kubeadm",
-    "cmd/kubeadm/app/apis/kubeadm/v1alpha1",
-    "cmd/kubeadm/app/constants",
-    "cmd/kubeadm/app/features",
     "pkg/apis/core",
     "pkg/apis/core/helper",
     "pkg/apis/core/v1/helper",
     "pkg/apis/core/v1/helper/qos",
     "pkg/kubelet/apis/kubeletconfig",
-    "pkg/kubelet/apis/kubeletconfig/scheme",
     "pkg/kubelet/apis/kubeletconfig/v1alpha1",
     "pkg/kubelet/qos",
     "pkg/kubelet/types",
     "pkg/master/ports",
     "pkg/proxy/apis/kubeproxyconfig",
-    "pkg/proxy/apis/kubeproxyconfig/scheme",
     "pkg/proxy/apis/kubeproxyconfig/v1alpha1",
-    "pkg/registry/core/service/allocator",
-    "pkg/registry/core/service/ipallocator",
-    "pkg/util/pointer",
-    "pkg/util/version"
+    "pkg/util/pointer"
   ]
   revision = "206f6fcb4097aa7aa63876d58bd91e71c7f83878"
 
@@ -851,6 +836,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "78f5358f8636ba4a7a1fbbb146109a982100d9870c1b4ea40b87f17af3136210"
+  inputs-digest = "447126dd0b109a4b33697b83fb9cb2c4b289daf0e7b0d9a6a1edbb56582efa6b"
   solver-name = "gps-cdcl"
   solver-version = 1
