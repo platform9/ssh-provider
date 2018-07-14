@@ -277,7 +277,8 @@ func (sa *SSHActuator) createNode(cluster *clusterv1.Cluster, machine *clusterv1
 		return fmt.Errorf("error writing kubeadm.yaml: %s", err)
 	}
 
-	cmd := fmt.Sprintf("/opt/bin/nodeadm join --master %s --token %s --cahash %s",
+	cmd := fmt.Sprintf("/opt/bin/nodeadm join --cfg %s --master %s --token %s --cahash %s",
+		"/tmp/nodeadm.yaml",
 		getAPIEndPoint(cluster),
 		string(sa.clusterToken.Data["token"]),
 		string(sa.clusterToken.Data["cahash"]))
