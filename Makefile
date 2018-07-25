@@ -58,4 +58,4 @@ $(BIN_DIR)/mockgen:
 	go build -o $@ $(SSHPROVIDER_PKG)/vendor/github.com/golang/mock/mockgen
 
 pkg/machine/mock/client_generated.go: pkg/machine/client.go
-	mockgen -source=$^ -package=mock -destination=$@
+	$(BIN_DIR)/mockgen -source=$^ -package=mock -destination=$@
