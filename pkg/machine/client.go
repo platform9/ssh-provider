@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strconv"
 
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
@@ -150,8 +151,9 @@ func (c *client) MkdirAll(path string, mode os.FileMode) error {
 		log.Println(stdErr)
 		return fmt.Errorf("unable to create directory %q: %s", path, err)
 	}
-	// Change file permissions recursively
-	cmd = fmt.Sprintf("chmod %d %s", mode, path)
+	// Change directory permission. Note that mode needs to be
+	// converted to bit (octet) representation for chmod consumption
+	cmd = fmt.Sprintf("chmod %s %s", strconv.FormatUint(uint64(mode), 8), path)
 	stdOut, stdErr, err = c.RunCommand(cmd)
 	if err != nil {
 		log.Println(stdOut)
