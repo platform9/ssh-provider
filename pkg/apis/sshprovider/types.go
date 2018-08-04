@@ -76,6 +76,19 @@ type ClusterStatus struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
+// MachineComponentVersions
+type MachineComponentVersions struct {
+	NodeadmVersion    string
+	EtcdadmVersion    string
+	KubernetesVersion string
+	CNIVersion        string
+	FlannelVersion    string
+	KeepalivedVersion string
+	EtcdVersion       string
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
 // MachineSpec
 type MachineSpec struct {
 	metav1.TypeMeta
@@ -86,6 +99,8 @@ type MachineSpec struct {
 	// ProvisionedMachineName is the binding reference to the Provisioned
 	// Machine backing this Machine.
 	ProvisionedMachineName string
+	// ComponentVersions enumerates versions of all the components
+	ComponentVersions MachineComponentVersions
 }
 
 // The MachineRole indicates the purpose of the Machine, and will determine
