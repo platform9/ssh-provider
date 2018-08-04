@@ -182,6 +182,58 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 			},
 			Dependencies: []string{},
 		},
+		"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.MachineComponentVersions": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "MachineComponentVersions",
+					Properties: map[string]spec.Schema{
+						"nodeadmVersion": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"etcdadmVersion": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"kubernetesVersion": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"cniVersion": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"flannelVersion": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"keepalivedVersion": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"etcdVersion": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{},
+		},
 		"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.MachineSpec": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
@@ -222,10 +274,17 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"componentVersions": {
+							SchemaProps: spec.SchemaProps{
+								Description: "ComponentVersions enumerates versions of all the components",
+								Ref:         ref("github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.MachineComponentVersions"),
+							},
+						},
 					},
 				},
 			},
-			Dependencies: []string{},
+			Dependencies: []string{
+				"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.MachineComponentVersions"},
 		},
 		"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.MachineStatus": {
 			Schema: spec.Schema{
