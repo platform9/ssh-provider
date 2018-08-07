@@ -83,3 +83,40 @@ func (m *MockClient) MkdirAll(path string, mode os.FileMode) error {
 func (mr *MockClientMockRecorder) MkdirAll(path, mode interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MkdirAll", reflect.TypeOf((*MockClient)(nil).MkdirAll), path, mode)
 }
+
+// MoveFile mocks base method
+func (m *MockClient) MoveFile(srcFilePath, dstFilePath string) error {
+	ret := m.ctrl.Call(m, "MoveFile", srcFilePath, dstFilePath)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MoveFile indicates an expected call of MoveFile
+func (mr *MockClientMockRecorder) MoveFile(srcFilePath, dstFilePath interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MoveFile", reflect.TypeOf((*MockClient)(nil).MoveFile), srcFilePath, dstFilePath)
+}
+
+// CopyFile mocks base method
+func (m *MockClient) CopyFile(srcFilePath, dstFilePath string) error {
+	ret := m.ctrl.Call(m, "CopyFile", srcFilePath, dstFilePath)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CopyFile indicates an expected call of CopyFile
+func (mr *MockClientMockRecorder) CopyFile(srcFilePath, dstFilePath interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopyFile", reflect.TypeOf((*MockClient)(nil).CopyFile), srcFilePath, dstFilePath)
+}
+
+// Exists mocks base method
+func (m *MockClient) Exists(filePath string) (bool, error) {
+	ret := m.ctrl.Call(m, "Exists", filePath)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Exists indicates an expected call of Exists
+func (mr *MockClientMockRecorder) Exists(filePath interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Exists", reflect.TypeOf((*MockClient)(nil).Exists), filePath)
+}

@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
@@ -20,6 +21,8 @@ type Client interface {
 	ReadFile(path string) ([]byte, error)
 	MkdirAll(path string, mode os.FileMode) error
 	MoveFile(srcFilePath, dstFilePath string) error
+	CopyFile(srcFilePath, dstFilePath string) error
+	Exists(filePath string) (bool, error)
 }
 
 type client struct {
@@ -186,4 +189,30 @@ func (c *client) MoveFile(srcFilePath, dstFilePath string) error {
 		return fmt.Errorf("unable to move file from %q to %q: %s", srcFilePath, dstFilePath, err)
 	}
 	return nil
+}
+
+// CopyFile copies file specifed by srcFilePath to dstFilePath,
+// and returns nil, or else returns an error.
+func (c *client) CopyFile(srcFilePath, dstFilePath string) error {
+	cmd := fmt.Sprintf("cp -f %s %s", srcFilePath, dstFilePath)
+	_, _, err := c.RunCommand(cmd)
+	if err != nil {
+		return fmt.Errorf("unable to copy file from %q to %q: %s", srcFilePath, dstFilePath, err)
+	}
+	return nil
+}
+
+// Exists checks if file specifed by filePath exists
+// and returns (bool, nil) or incase of error returns (false, error).
+func (c *client) Exists(filePath string) (bool, error) {
+	cmd := fmt.Sprintf("test -e %s && echo true || echo false", filePath)
+	outputBytes, _, err := c.RunCommand(cmd)
+	if err != nil {
+		return false, fmt.Errorf("unable to check if file %q exists: %s", filePath, err)
+	}
+	outputString := strings.TrimSpace(string(outputBytes))
+	if outputString == "true" {
+		return true, nil
+	}
+	return false, nil
 }
