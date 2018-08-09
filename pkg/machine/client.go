@@ -191,8 +191,7 @@ func (c *client) MoveFile(srcFilePath, dstFilePath string) error {
 	return nil
 }
 
-// CopyFile copies file specifed by srcFilePath to dstFilePath,
-// and returns nil, or else returns an error.
+// CopyFile copies file specified by srcFilePath to dstFilePath
 func (c *client) CopyFile(srcFilePath, dstFilePath string) error {
 	cmd := fmt.Sprintf("cp -f %s %s", srcFilePath, dstFilePath)
 	_, _, err := c.RunCommand(cmd)
@@ -202,13 +201,12 @@ func (c *client) CopyFile(srcFilePath, dstFilePath string) error {
 	return nil
 }
 
-// Exists checks if file specifed by filePath exists
-// and returns (bool, nil) or incase of error returns (false, error).
-func (c *client) Exists(filePath string) (bool, error) {
-	cmd := fmt.Sprintf("test -e %s && echo true || echo false", filePath)
+// Exists checks if specified path exists
+func (c *client) Exists(path string) (bool, error) {
+	cmd := fmt.Sprintf("test -e %s && echo true || echo false", path)
 	outputBytes, _, err := c.RunCommand(cmd)
 	if err != nil {
-		return false, fmt.Errorf("unable to check if file %q exists: %s", filePath, err)
+		return false, fmt.Errorf("unable to check if path %q exists: %s", path, err)
 	}
 	outputString := strings.TrimSpace(string(outputBytes))
 	if outputString == "true" {
