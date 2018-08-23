@@ -72,6 +72,12 @@
   version = "v3.1.10"
 
 [[projects]]
+  name = "github.com/coreos/go-semver"
+  packages = ["semver"]
+  revision = "8ab6407b697782a06568d4b7f1db25550ec2e4c6"
+  version = "v0.2.0"
+
+[[projects]]
   name = "github.com/coreos/go-systemd"
   packages = [
     "daemon",
@@ -1003,6 +1009,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "193da0f860620c8a8edbb15c01f213c0a9ab7b52018f711b79ced3a9f907e716"
+  inputs-digest = "70cfed6516921c6347903ec47d251c5500605a5c34b3a1b013e37209398bf75b"
   solver-name = "gps-cdcl"
   solver-version = 1
