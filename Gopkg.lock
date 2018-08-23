@@ -27,12 +27,6 @@
   version = "v8.0.0"
 
 [[projects]]
-  name = "github.com/Jeffail/gabs"
-  packages = ["."]
-  revision = "7a0fed31069aba77993a518cc2f37b28ee7aa883"
-  version = "1.1"
-
-[[projects]]
   name = "github.com/NYTimes/gziphandler"
   packages = ["."]
   revision = "56545f4a5d46df9a6648819d1664c3a03a13ffdb"
@@ -47,6 +41,12 @@
   name = "github.com/PuerkitoBio/urlesc"
   packages = ["."]
   revision = "5bd2802263f21d8788851d5305584c82a5c75d7e"
+
+[[projects]]
+  name = "github.com/apparentlymart/go-cidr"
+  packages = ["cidr"]
+  revision = "b1115bf8e14a60131a196f908223e4506b0ddc35"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/beorn7/perks"
@@ -170,9 +170,12 @@
 
 [[projects]]
   name = "github.com/golang/mock"
-  packages = ["gomock"]
+  packages = [
+    "gomock",
+    "mockgen",
+    "mockgen/model"
+  ]
   revision = "c34cdb4725f4c3844d095133c6e40e448b86589b"
-  version = "v1.1.1"
 
 [[projects]]
   name = "github.com/golang/protobuf"
@@ -815,35 +818,64 @@
     "informers/storage/v1alpha1",
     "informers/storage/v1beta1",
     "kubernetes",
+    "kubernetes/fake",
     "kubernetes/scheme",
     "kubernetes/typed/admissionregistration/v1alpha1",
+    "kubernetes/typed/admissionregistration/v1alpha1/fake",
     "kubernetes/typed/admissionregistration/v1beta1",
+    "kubernetes/typed/admissionregistration/v1beta1/fake",
     "kubernetes/typed/apps/v1",
+    "kubernetes/typed/apps/v1/fake",
     "kubernetes/typed/apps/v1beta1",
+    "kubernetes/typed/apps/v1beta1/fake",
     "kubernetes/typed/apps/v1beta2",
+    "kubernetes/typed/apps/v1beta2/fake",
     "kubernetes/typed/authentication/v1",
+    "kubernetes/typed/authentication/v1/fake",
     "kubernetes/typed/authentication/v1beta1",
+    "kubernetes/typed/authentication/v1beta1/fake",
     "kubernetes/typed/authorization/v1",
+    "kubernetes/typed/authorization/v1/fake",
     "kubernetes/typed/authorization/v1beta1",
+    "kubernetes/typed/authorization/v1beta1/fake",
     "kubernetes/typed/autoscaling/v1",
+    "kubernetes/typed/autoscaling/v1/fake",
     "kubernetes/typed/autoscaling/v2beta1",
+    "kubernetes/typed/autoscaling/v2beta1/fake",
     "kubernetes/typed/batch/v1",
+    "kubernetes/typed/batch/v1/fake",
     "kubernetes/typed/batch/v1beta1",
+    "kubernetes/typed/batch/v1beta1/fake",
     "kubernetes/typed/batch/v2alpha1",
+    "kubernetes/typed/batch/v2alpha1/fake",
     "kubernetes/typed/certificates/v1beta1",
+    "kubernetes/typed/certificates/v1beta1/fake",
     "kubernetes/typed/core/v1",
+    "kubernetes/typed/core/v1/fake",
     "kubernetes/typed/events/v1beta1",
+    "kubernetes/typed/events/v1beta1/fake",
     "kubernetes/typed/extensions/v1beta1",
+    "kubernetes/typed/extensions/v1beta1/fake",
     "kubernetes/typed/networking/v1",
+    "kubernetes/typed/networking/v1/fake",
     "kubernetes/typed/policy/v1beta1",
+    "kubernetes/typed/policy/v1beta1/fake",
     "kubernetes/typed/rbac/v1",
+    "kubernetes/typed/rbac/v1/fake",
     "kubernetes/typed/rbac/v1alpha1",
+    "kubernetes/typed/rbac/v1alpha1/fake",
     "kubernetes/typed/rbac/v1beta1",
+    "kubernetes/typed/rbac/v1beta1/fake",
     "kubernetes/typed/scheduling/v1alpha1",
+    "kubernetes/typed/scheduling/v1alpha1/fake",
     "kubernetes/typed/settings/v1alpha1",
+    "kubernetes/typed/settings/v1alpha1/fake",
     "kubernetes/typed/storage/v1",
+    "kubernetes/typed/storage/v1/fake",
     "kubernetes/typed/storage/v1alpha1",
+    "kubernetes/typed/storage/v1alpha1/fake",
     "kubernetes/typed/storage/v1beta1",
+    "kubernetes/typed/storage/v1beta1/fake",
     "listers/admissionregistration/v1alpha1",
     "listers/admissionregistration/v1beta1",
     "listers/apps/v1",
@@ -951,34 +983,6 @@
   revision = "a07b7bbb58e7fdc5144f8d7046331d29fc9ad3b3"
 
 [[projects]]
-  name = "k8s.io/kubernetes"
-  packages = [
-    "cmd/kubeadm/app/apis/kubeadm",
-    "cmd/kubeadm/app/apis/kubeadm/v1alpha1",
-    "cmd/kubeadm/app/constants",
-    "cmd/kubeadm/app/features",
-    "pkg/apis/core",
-    "pkg/apis/core/helper",
-    "pkg/apis/core/v1/helper",
-    "pkg/apis/core/v1/helper/qos",
-    "pkg/kubelet/apis/kubeletconfig",
-    "pkg/kubelet/apis/kubeletconfig/scheme",
-    "pkg/kubelet/apis/kubeletconfig/v1alpha1",
-    "pkg/kubelet/qos",
-    "pkg/kubelet/types",
-    "pkg/master/ports",
-    "pkg/proxy/apis/kubeproxyconfig",
-    "pkg/proxy/apis/kubeproxyconfig/scheme",
-    "pkg/proxy/apis/kubeproxyconfig/v1alpha1",
-    "pkg/registry/core/service/allocator",
-    "pkg/registry/core/service/ipallocator",
-    "pkg/util/pointer",
-    "pkg/util/version"
-  ]
-  revision = "57729ea3d9a1b75f3fc7bbbadc597ba707d47c8a"
-  version = "v1.9.9"
-
-[[projects]]
   branch = "master"
   name = "sigs.k8s.io/cluster-api"
   packages = [
@@ -988,14 +992,17 @@
     "pkg/apis/cluster/install",
     "pkg/apis/cluster/v1alpha1",
     "pkg/client/clientset_generated/clientset",
+    "pkg/client/clientset_generated/clientset/fake",
     "pkg/client/clientset_generated/clientset/scheme",
-    "pkg/client/clientset_generated/clientset/typed/cluster/v1alpha1"
+    "pkg/client/clientset_generated/clientset/typed/cluster/v1alpha1",
+    "pkg/client/clientset_generated/clientset/typed/cluster/v1alpha1/fake",
+    "pkg/util"
   ]
   revision = "dfa371814c0b39a284662b897ba9b5df4749e973"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "ffe183e9168e9f92f3b28effe8774a604b0e13af8dd526ef15e7345161b70cf0"
+  inputs-digest = "193da0f860620c8a8edbb15c01f213c0a9ab7b52018f711b79ced3a9f907e716"
   solver-name = "gps-cdcl"
   solver-version = 1
