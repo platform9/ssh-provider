@@ -30,6 +30,150 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
+		"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.ClientConnectionConfiguration": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "ClientConnectionConfiguration contains details for constructing a client.",
+					Properties: map[string]spec.Schema{
+						"kubeconfig": {
+							SchemaProps: spec.SchemaProps{
+								Description: "kubeconfig is the path to a kubeconfig file.",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"acceptContentTypes": {
+							SchemaProps: spec.SchemaProps{
+								Description: "acceptContentTypes defines the Accept header sent by clients when connecting to a server, overriding the default value of 'application/json'. This field will control all connections to the server used by a particular client.",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"contentType": {
+							SchemaProps: spec.SchemaProps{
+								Description: "contentType is the content type used when sending data to the server from this client.",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"qps": {
+							SchemaProps: spec.SchemaProps{
+								Description: "qps controls the number of queries per second allowed for this connection.",
+								Type:        []string{"number"},
+								Format:      "float",
+							},
+						},
+						"burst": {
+							SchemaProps: spec.SchemaProps{
+								Description: "burst allows extra queries to accumulate when a client is exceeding its rate.",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{},
+		},
+		"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.ClusterConfig": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Properties: map[string]spec.Schema{
+						"kubeAPIServer": {
+							SchemaProps: spec.SchemaProps{
+								Description: "generic map[string]string types would eventually be replaced by corresponding structured types as they become available upstream",
+								Type:        []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"kubeDNS": {
+							SchemaProps: spec.SchemaProps{
+								Type: []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"kubeControllerManager": {
+							SchemaProps: spec.SchemaProps{
+								Type: []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"kubeScheduler": {
+							SchemaProps: spec.SchemaProps{
+								Type: []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"kubeProxy": {
+							SchemaProps: spec.SchemaProps{
+								Ref: ref("github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeProxyConfiguration"),
+							},
+						},
+						"kubelet": {
+							SchemaProps: spec.SchemaProps{
+								Ref: ref("github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeletConfiguration"),
+							},
+						},
+						"networkBackend": {
+							SchemaProps: spec.SchemaProps{
+								Type: []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"keepAlived": {
+							SchemaProps: spec.SchemaProps{
+								Type: []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{
+				"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeProxyConfiguration", "github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeletConfiguration"},
+		},
 		"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.ClusterSpec": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
@@ -85,11 +229,17 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Ref:         ref("github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.VIPConfiguration"),
 							},
 						},
+						"clusterConfig": {
+							SchemaProps: spec.SchemaProps{
+								Description: "ClusterConfig is the set of configurable parameters for the cluster. If not provided, the parameters are set to their default values.",
+								Ref:         ref("github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.ClusterConfig"),
+							},
+						},
 					},
 				},
 			},
 			Dependencies: []string{
-				"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.VIPConfiguration", "k8s.io/api/core/v1.LocalObjectReference"},
+				"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.ClusterConfig", "github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.VIPConfiguration", "k8s.io/api/core/v1.LocalObjectReference"},
 		},
 		"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.ClusterStatus": {
 			Schema: spec.Schema{
@@ -178,6 +328,1006 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 					},
 					Required: []string{"ID", "name", "peerURLs", "clientURLs"},
+				},
+			},
+			Dependencies: []string{},
+		},
+		"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeProxyConfiguration": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "KubeProxyConfiguration contains everything necessary to configure the Kubernetes proxy server.",
+					Properties: map[string]spec.Schema{
+						"kind": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"apiVersion": {
+							SchemaProps: spec.SchemaProps{
+								Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"featureGates": {
+							SchemaProps: spec.SchemaProps{
+								Description: "featureGates is a map of feature names to bools that enable or disable alpha/experimental features.",
+								Type:        []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"boolean"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"bindAddress": {
+							SchemaProps: spec.SchemaProps{
+								Description: "bindAddress is the IP address for the proxy server to serve on (set to 0.0.0.0 for all interfaces)",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"healthzBindAddress": {
+							SchemaProps: spec.SchemaProps{
+								Description: "healthzBindAddress is the IP address and port for the health check server to serve on, defaulting to 0.0.0.0:10256",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"metricsBindAddress": {
+							SchemaProps: spec.SchemaProps{
+								Description: "metricsBindAddress is the IP address and port for the metrics server to serve on, defaulting to 127.0.0.1:10249 (set to 0.0.0.0 for all interfaces)",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"enableProfiling": {
+							SchemaProps: spec.SchemaProps{
+								Description: "enableProfiling enables profiling via web interface on /debug/pprof handler. Profiling handlers will be handled by metrics server.",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
+						"clusterCIDR": {
+							SchemaProps: spec.SchemaProps{
+								Description: "clusterCIDR is the CIDR range of the pods in the cluster. It is used to bridge traffic coming from outside of the cluster. If not provided, no off-cluster bridging will be performed.",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"hostnameOverride": {
+							SchemaProps: spec.SchemaProps{
+								Description: "hostnameOverride, if non-empty, will be used as the identity instead of the actual hostname.",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"clientConnection": {
+							SchemaProps: spec.SchemaProps{
+								Description: "clientConnection specifies the kubeconfig file and client connection settings for the proxy server to use when communicating with the apiserver.",
+								Ref:         ref("github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.ClientConnectionConfiguration"),
+							},
+						},
+						"iptables": {
+							SchemaProps: spec.SchemaProps{
+								Description: "iptables contains iptables-related configuration options.",
+								Ref:         ref("github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeProxyIPTablesConfiguration"),
+							},
+						},
+						"ipvs": {
+							SchemaProps: spec.SchemaProps{
+								Description: "ipvs contains ipvs-related configuration options.",
+								Ref:         ref("github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeProxyIPVSConfiguration"),
+							},
+						},
+						"oomScoreAdj": {
+							SchemaProps: spec.SchemaProps{
+								Description: "oomScoreAdj is the oom-score-adj value for kube-proxy process. Values must be within the range [-1000, 1000]",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"mode": {
+							SchemaProps: spec.SchemaProps{
+								Description: "mode specifies which proxy mode to use.",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"portRange": {
+							SchemaProps: spec.SchemaProps{
+								Description: "portRange is the range of host ports (beginPort-endPort, inclusive) that may be consumed in order to proxy service traffic. If unspecified (0-0) then ports will be randomly chosen.",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"resourceContainer": {
+							SchemaProps: spec.SchemaProps{
+								Description: "resourceContainer is the bsolute name of the resource-only container to create and run the Kube-proxy in (Default: /kube-proxy).",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"udpIdleTimeout": {
+							SchemaProps: spec.SchemaProps{
+								Description: "udpIdleTimeout is how long an idle UDP connection will be kept open (e.g. '250ms', '2s'). Must be greater than 0. Only applicable for proxyMode=userspace.",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"conntrack": {
+							SchemaProps: spec.SchemaProps{
+								Description: "conntrack contains conntrack-related configuration options.",
+								Ref:         ref("github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeProxyConntrackConfiguration"),
+							},
+						},
+						"configSyncPeriod": {
+							SchemaProps: spec.SchemaProps{
+								Description: "configSyncPeriod is how often configuration from the apiserver is refreshed. Must be greater than 0.",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"nodePortAddresses": {
+							SchemaProps: spec.SchemaProps{
+								Description: "nodePortAddresses is the --nodeport-addresses value for kube-proxy process. Values must be valid IP blocks. These values are as a parameter to select the interfaces where nodeport works. In case someone would like to expose a service on localhost for local visit and some other interfaces for particular purpose, a list of IP blocks would do that. If set it to \"127.0.0.0/8\", kube-proxy will only select the loopback interface for NodePort. If set it to a non-zero IP block, kube-proxy will filter that down to just the IPs that applied to the node. An empty string slice is meant to select all network interfaces.",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+					},
+					Required: []string{"mode"},
+				},
+			},
+			Dependencies: []string{
+				"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.ClientConnectionConfiguration", "github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeProxyConntrackConfiguration", "github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeProxyIPTablesConfiguration", "github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeProxyIPVSConfiguration", "k8s.io/apimachinery/pkg/apis/meta/v1.Duration"},
+		},
+		"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeProxyConntrackConfiguration": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "KubeProxyConntrackConfiguration contains conntrack settings for the Kubernetes proxy server.",
+					Properties: map[string]spec.Schema{
+						"max": {
+							SchemaProps: spec.SchemaProps{
+								Description: "max is the maximum number of NAT connections to track (0 to leave as-is).  This takes precedence over maxPerCore and min.",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"maxPerCore": {
+							SchemaProps: spec.SchemaProps{
+								Description: "maxPerCore is the maximum number of NAT connections to track per CPU core (0 to leave the limit as-is and ignore min).",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"min": {
+							SchemaProps: spec.SchemaProps{
+								Description: "min is the minimum value of connect-tracking records to allocate, regardless of conntrackMaxPerCore (set maxPerCore=0 to leave the limit as-is).",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"tcpEstablishedTimeout": {
+							SchemaProps: spec.SchemaProps{
+								Description: "tcpEstablishedTimeout is how long an idle TCP connection will be kept open (e.g. '2s').  Must be greater than 0 to set.",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"tcpCloseWaitTimeout": {
+							SchemaProps: spec.SchemaProps{
+								Description: "tcpCloseWaitTimeout is how long an idle conntrack entry in CLOSE_WAIT state will remain in the conntrack table. (e.g. '60s'). Must be greater than 0 to set.",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{
+				"k8s.io/apimachinery/pkg/apis/meta/v1.Duration"},
+		},
+		"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeProxyIPTablesConfiguration": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "KubeProxyIPTablesConfiguration contains iptables-related configuration details for the Kubernetes proxy server.",
+					Properties: map[string]spec.Schema{
+						"masqueradeBit": {
+							SchemaProps: spec.SchemaProps{
+								Description: "masqueradeBit is the bit of the iptables fwmark space to use for SNAT if using the pure iptables proxy mode. Values must be within the range [0, 31].",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"masqueradeAll": {
+							SchemaProps: spec.SchemaProps{
+								Description: "masqueradeAll tells kube-proxy to SNAT everything if using the pure iptables proxy mode.",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
+						"syncPeriod": {
+							SchemaProps: spec.SchemaProps{
+								Description: "syncPeriod is the period that iptables rules are refreshed (e.g. '5s', '1m', '2h22m').  Must be greater than 0.",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"minSyncPeriod": {
+							SchemaProps: spec.SchemaProps{
+								Description: "minSyncPeriod is the minimum period that iptables rules are refreshed (e.g. '5s', '1m', '2h22m').",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{
+				"k8s.io/apimachinery/pkg/apis/meta/v1.Duration"},
+		},
+		"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeProxyIPVSConfiguration": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "KubeProxyIPVSConfiguration contains ipvs-related configuration details for the Kubernetes proxy server.",
+					Properties: map[string]spec.Schema{
+						"syncPeriod": {
+							SchemaProps: spec.SchemaProps{
+								Description: "syncPeriod is the period that ipvs rules are refreshed (e.g. '5s', '1m', '2h22m').  Must be greater than 0.",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"minSyncPeriod": {
+							SchemaProps: spec.SchemaProps{
+								Description: "minSyncPeriod is the minimum period that ipvs rules are refreshed (e.g. '5s', '1m', '2h22m').",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"scheduler": {
+							SchemaProps: spec.SchemaProps{
+								Description: "ipvs scheduler",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{
+				"k8s.io/apimachinery/pkg/apis/meta/v1.Duration"},
+		},
+		"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeletAnonymousAuthentication": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Properties: map[string]spec.Schema{
+						"enabled": {
+							SchemaProps: spec.SchemaProps{
+								Description: "enabled allows anonymous requests to the kubelet server. Requests that are not rejected by another authentication method are treated as anonymous requests. Anonymous requests have a username of system:anonymous, and a group name of system:unauthenticated.",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{},
+		},
+		"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeletAuthentication": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Properties: map[string]spec.Schema{
+						"x509": {
+							SchemaProps: spec.SchemaProps{
+								Description: "x509 contains settings related to x509 client certificate authentication",
+								Ref:         ref("github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeletX509Authentication"),
+							},
+						},
+						"webhook": {
+							SchemaProps: spec.SchemaProps{
+								Description: "webhook contains settings related to webhook bearer token authentication",
+								Ref:         ref("github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeletWebhookAuthentication"),
+							},
+						},
+						"anonymous": {
+							SchemaProps: spec.SchemaProps{
+								Description: "anonymous contains settings related to anonymous authentication",
+								Ref:         ref("github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeletAnonymousAuthentication"),
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{
+				"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeletAnonymousAuthentication", "github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeletWebhookAuthentication", "github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeletX509Authentication"},
+		},
+		"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeletAuthorization": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Properties: map[string]spec.Schema{
+						"mode": {
+							SchemaProps: spec.SchemaProps{
+								Description: "mode is the authorization mode to apply to requests to the kubelet server. Valid values are AlwaysAllow and Webhook. Webhook mode uses the SubjectAccessReview API to determine authorization.",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"webhook": {
+							SchemaProps: spec.SchemaProps{
+								Description: "webhook contains settings related to Webhook authorization.",
+								Ref:         ref("github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeletWebhookAuthorization"),
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{
+				"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeletWebhookAuthorization"},
+		},
+		"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeletConfiguration": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "KubeletConfiguration contains the configuration for the Kubelet",
+					Properties: map[string]spec.Schema{
+						"kind": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"apiVersion": {
+							SchemaProps: spec.SchemaProps{
+								Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"staticPodPath": {
+							SchemaProps: spec.SchemaProps{
+								Description: "staticPodPath is the path to the directory containing local (static) pods to run, or the path to a single static pod file. Default: \"\"",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"syncFrequency": {
+							SchemaProps: spec.SchemaProps{
+								Description: "syncFrequency is the max period between synchronizing running containers and config. Default: \"1m\"",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"fileCheckFrequency": {
+							SchemaProps: spec.SchemaProps{
+								Description: "fileCheckFrequency is the duration between checking config files for new data Default: \"20s\"",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"httpCheckFrequency": {
+							SchemaProps: spec.SchemaProps{
+								Description: "httpCheckFrequency is the duration between checking http for new data Default: \"20s\"",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"staticPodURL": {
+							SchemaProps: spec.SchemaProps{
+								Description: "staticPodURL is the URL for accessing static pods to run Default: \"\"",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"staticPodURLHeader": {
+							SchemaProps: spec.SchemaProps{
+								Description: "staticPodURLHeader is a map of slices with HTTP headers to use when accessing the podURL Default: nil",
+								Type:        []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type: []string{"array"},
+											Items: &spec.SchemaOrArray{
+												Schema: &spec.Schema{
+													SchemaProps: spec.SchemaProps{
+														Type:   []string{"string"},
+														Format: "",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						"address": {
+							SchemaProps: spec.SchemaProps{
+								Description: "address is the IP address for the Kubelet to serve on (set to 0.0.0.0 for all interfaces). Default: \"0.0.0.0\"",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"port": {
+							SchemaProps: spec.SchemaProps{
+								Description: "port is the port for the Kubelet to serve on. Default: 10250",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"readOnlyPort": {
+							SchemaProps: spec.SchemaProps{
+								Description: "readOnlyPort is the read-only port for the Kubelet to serve on with no authentication/authorization. Default: 0 (disabled)",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"tlsCertFile": {
+							SchemaProps: spec.SchemaProps{
+								Description: "tlsCertFile is the file containing x509 Certificate for HTTPS.  (CA cert, if any, concatenated after server cert). If tlsCertFile and tlsPrivateKeyFile are not provided, a self-signed certificate and key are generated for the public address and saved to the directory passed to the Kubelet's --cert-dir flag. Default: \"\"",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"tlsPrivateKeyFile": {
+							SchemaProps: spec.SchemaProps{
+								Description: "tlsPrivateKeyFile is the file containing x509 private key matching tlsCertFile Default: \"\"",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"tlsCipherSuites": {
+							SchemaProps: spec.SchemaProps{
+								Description: "TLSCipherSuites is the list of allowed cipher suites for the server. Values are from tls package constants (https://golang.org/pkg/crypto/tls/#pkg-constants). Default: nil",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"tlsMinVersion": {
+							SchemaProps: spec.SchemaProps{
+								Description: "TLSMinVersion is the minimum TLS version supported. Values are from tls package constants (https://golang.org/pkg/crypto/tls/#pkg-constants). Default: \"\"",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"authentication": {
+							SchemaProps: spec.SchemaProps{
+								Description: "authentication specifies how requests to the Kubelet's server are authenticated Defaults:\n  anonymous:\n    enabled: false\n  webhook:\n    enabled: true\n    cacheTTL: \"2m\"",
+								Ref:         ref("github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeletAuthentication"),
+							},
+						},
+						"authorization": {
+							SchemaProps: spec.SchemaProps{
+								Description: "authorization specifies how requests to the Kubelet's server are authorized Defaults:\n  mode: Webhook\n  webhook:\n    cacheAuthorizedTTL: \"5m\"\n    cacheUnauthorizedTTL: \"30s\"",
+								Ref:         ref("github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeletAuthorization"),
+							},
+						},
+						"registryPullQPS": {
+							SchemaProps: spec.SchemaProps{
+								Description: "registryPullQPS is the limit of registry pulls per second. Set to 0 for no limit. Default: 5",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"registryBurst": {
+							SchemaProps: spec.SchemaProps{
+								Description: "registryBurst is the maximum size of bursty pulls, temporarily allows pulls to burst to this number, while still not exceeding registryPullQPS. Only used if registryPullQPS > 0. Default: 10",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"eventRecordQPS": {
+							SchemaProps: spec.SchemaProps{
+								Description: "eventRecordQPS is the maximum event creations per second. If 0, there is no limit enforced. Default: 5",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"eventBurst": {
+							SchemaProps: spec.SchemaProps{
+								Description: "eventBurst is the maximum size of a burst of event creations, temporarily allows event creations to burst to this number, while still not exceeding eventRecordQPS. Only used if eventRecordQPS > 0. Default: 10",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"enableDebuggingHandlers": {
+							SchemaProps: spec.SchemaProps{
+								Description: "enableDebuggingHandlers enables server endpoints for log collection and local running of containers and commands Default: true",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
+						"enableContentionProfiling": {
+							SchemaProps: spec.SchemaProps{
+								Description: "enableContentionProfiling enables lock contention profiling, if enableDebuggingHandlers is true. Default: false",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
+						"healthzPort": {
+							SchemaProps: spec.SchemaProps{
+								Description: "healthzPort is the port of the localhost healthz endpoint (set to 0 to disable) Default: 10248",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"healthzBindAddress": {
+							SchemaProps: spec.SchemaProps{
+								Description: "healthzBindAddress is the IP address for the healthz server to serve on Default: \"127.0.0.1\"",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"oomScoreAdj": {
+							SchemaProps: spec.SchemaProps{
+								Description: "oomScoreAdj is The oom-score-adj value for kubelet process. Values must be within the range [-1000, 1000]. Default: -999",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"clusterDomain": {
+							SchemaProps: spec.SchemaProps{
+								Description: "clusterDomain is the DNS domain for this cluster. If set, kubelet will configure all containers to search this domain in addition to the host's search domains. Default: \"\"",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"clusterDNS": {
+							SchemaProps: spec.SchemaProps{
+								Description: "clusterDNS is a list of IP addresses for the cluster DNS server. If set, kubelet will configure all containers to use this for DNS resolution instead of the host's DNS servers. Default: nil",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"streamingConnectionIdleTimeout": {
+							SchemaProps: spec.SchemaProps{
+								Description: "streamingConnectionIdleTimeout is the maximum time a streaming connection can be idle before the connection is automatically closed. Default: \"4h\"",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"nodeStatusUpdateFrequency": {
+							SchemaProps: spec.SchemaProps{
+								Description: "nodeStatusUpdateFrequency is the frequency that kubelet posts node status to master. Note: be cautious when changing the constant, it must work with nodeMonitorGracePeriod in nodecontroller. Default: \"10s\"",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"imageMinimumGCAge": {
+							SchemaProps: spec.SchemaProps{
+								Description: "imageMinimumGCAge is the minimum age for an unused image before it is garbage collected. Default: \"2m\"",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"imageGCHighThresholdPercent": {
+							SchemaProps: spec.SchemaProps{
+								Description: "imageGCHighThresholdPercent is the percent of disk usage after which image garbage collection is always run. The percent is calculated as this field value out of 100. Default: 85",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"imageGCLowThresholdPercent": {
+							SchemaProps: spec.SchemaProps{
+								Description: "imageGCLowThresholdPercent is the percent of disk usage before which image garbage collection is never run. Lowest disk usage to garbage collect to. The percent is calculated as this field value out of 100. Default: 80",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"volumeStatsAggPeriod": {
+							SchemaProps: spec.SchemaProps{
+								Description: "How frequently to calculate and cache volume disk usage for all pods Default: \"1m\"",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"kubeletCgroups": {
+							SchemaProps: spec.SchemaProps{
+								Description: "kubeletCgroups is the absolute name of cgroups to isolate the kubelet in Default: \"\"",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"systemCgroups": {
+							SchemaProps: spec.SchemaProps{
+								Description: "systemCgroups is absolute name of cgroups in which to place all non-kernel processes that are not already in a container. Empty for no container. Rolling back the flag requires a reboot. Default: \"\"",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"cgroupRoot": {
+							SchemaProps: spec.SchemaProps{
+								Description: "cgroupRoot is the root cgroup to use for pods. This is handled by the container runtime on a best effort basis. Default: \"\"",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"cgroupsPerQOS": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Enable QoS based Cgroup hierarchy: top level cgroups for QoS Classes And all Burstable and BestEffort pods are brought up under their specific top level QoS cgroup. Default: true",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
+						"cgroupDriver": {
+							SchemaProps: spec.SchemaProps{
+								Description: "driver that the kubelet uses to manipulate cgroups on the host (cgroupfs or systemd) Default: \"cgroupfs\"",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"cpuManagerPolicy": {
+							SchemaProps: spec.SchemaProps{
+								Description: "CPUManagerPolicy is the name of the policy to use. Requires the CPUManager feature gate to be enabled. Default: \"none\"",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"cpuManagerReconcilePeriod": {
+							SchemaProps: spec.SchemaProps{
+								Description: "CPU Manager reconciliation period. Requires the CPUManager feature gate to be enabled. Default: \"10s\"",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"runtimeRequestTimeout": {
+							SchemaProps: spec.SchemaProps{
+								Description: "runtimeRequestTimeout is the timeout for all runtime requests except long running requests - pull, logs, exec and attach. Default: \"2m\"",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"hairpinMode": {
+							SchemaProps: spec.SchemaProps{
+								Description: "hairpinMode specifies how the Kubelet should configure the container bridge for hairpin packets. Setting this flag allows endpoints in a Service to loadbalance back to themselves if they should try to access their own Service. Values:\n  \"promiscuous-bridge\": make the container bridge promiscuous.\n  \"hairpin-veth\":       set the hairpin flag on container veth interfaces.\n  \"none\":               do nothing.\nGenerally, one must set --hairpin-mode=hairpin-veth to achieve hairpin NAT, because promiscuous-bridge assumes the existence of a container bridge named cbr0. Default: \"promiscuous-bridge\"",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"maxPods": {
+							SchemaProps: spec.SchemaProps{
+								Description: "maxPods is the number of pods that can run on this Kubelet. Default: 110",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"podCIDR": {
+							SchemaProps: spec.SchemaProps{
+								Description: "The CIDR to use for pod IP addresses, only used in standalone mode. In cluster mode, this is obtained from the master. Default: \"\"",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"podPidsLimit": {
+							SchemaProps: spec.SchemaProps{
+								Description: "PodPidsLimit is the maximum number of pids in any pod. Requires the SupportPodPidsLimit feature gate to be enabled. Default: -1",
+								Type:        []string{"integer"},
+								Format:      "int64",
+							},
+						},
+						"resolvConf": {
+							SchemaProps: spec.SchemaProps{
+								Description: "ResolverConfig is the resolver configuration file used as the basis for the container DNS resolution configuration. Default: \"/etc/resolv.conf\"",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"cpuCFSQuota": {
+							SchemaProps: spec.SchemaProps{
+								Description: "cpuCFSQuota enables CPU CFS quota enforcement for containers that specify CPU limits. Default: true",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
+						"maxOpenFiles": {
+							SchemaProps: spec.SchemaProps{
+								Description: "maxOpenFiles is Number of files that can be opened by Kubelet process. Default: 1000000",
+								Type:        []string{"integer"},
+								Format:      "int64",
+							},
+						},
+						"contentType": {
+							SchemaProps: spec.SchemaProps{
+								Description: "contentType is contentType of requests sent to apiserver. Default: \"application/vnd.kubernetes.protobuf\"",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"kubeAPIQPS": {
+							SchemaProps: spec.SchemaProps{
+								Description: "kubeAPIQPS is the QPS to use while talking with kubernetes apiserver Default: 5",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"kubeAPIBurst": {
+							SchemaProps: spec.SchemaProps{
+								Description: "kubeAPIBurst is the burst to allow while talking with kubernetes apiserver Default: 10",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"serializeImagePulls": {
+							SchemaProps: spec.SchemaProps{
+								Description: "serializeImagePulls when enabled, tells the Kubelet to pull images one at a time. We recommend *not* changing the default value on nodes that run docker daemon with version  < 1.9 or an Aufs storage backend. Issue #10959 has more details. Default: true",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
+						"evictionHard": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Map of signal names to quantities that defines hard eviction thresholds. For example: {\"memory.available\": \"300Mi\"}. To explicitly disable, pass a 0% or 100% threshold on an arbitrary resource. Default:\n  memory.available:  \"100Mi\"\n  nodefs.available:  \"10%\"\n  nodefs.inodesFree: \"5%\"\n  imagefs.available: \"15%\"",
+								Type:        []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"evictionSoft": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Map of signal names to quantities that defines soft eviction thresholds.  For example: {\"memory.available\": \"300Mi\"}. Default: nil",
+								Type:        []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"evictionSoftGracePeriod": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Map of signal names to quantities that defines grace periods for each soft eviction signal. For example: {\"memory.available\": \"30s\"}. Default: nil",
+								Type:        []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"evictionPressureTransitionPeriod": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Duration for which the kubelet has to wait before transitioning out of an eviction pressure condition. Default: \"5m\"",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"evictionMaxPodGracePeriod": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Maximum allowed grace period (in seconds) to use when terminating pods in response to a soft eviction threshold being met. Default: 0",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"evictionMinimumReclaim": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Map of signal names to quantities that defines minimum reclaims, which describe the minimum amount of a given resource the kubelet will reclaim when performing a pod eviction while that resource is under pressure. For example: {\"imagefs.available\": \"2Gi\"} Default: nil",
+								Type:        []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"podsPerCore": {
+							SchemaProps: spec.SchemaProps{
+								Description: "podsPerCore is the maximum number of pods per core. Cannot exceed MaxPods. If 0, this field is ignored. Default: 0",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"enableControllerAttachDetach": {
+							SchemaProps: spec.SchemaProps{
+								Description: "enableControllerAttachDetach enables the Attach/Detach controller to manage attachment/detachment of volumes scheduled to this node, and disables kubelet from executing any attach/detach operations Default: true",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
+						"protectKernelDefaults": {
+							SchemaProps: spec.SchemaProps{
+								Description: "protectKernelDefaults, if true, causes the Kubelet to error if kernel flags are not as it expects. Otherwise the Kubelet will attempt to modify kernel flags to match its expectation. Default: false",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
+						"makeIPTablesUtilChains": {
+							SchemaProps: spec.SchemaProps{
+								Description: "If true, Kubelet ensures a set of iptables rules are present on host. These rules will serve as utility rules for various components, e.g. KubeProxy. The rules will be created based on IPTablesMasqueradeBit and IPTablesDropBit. Default: true",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
+						"iptablesMasqueradeBit": {
+							SchemaProps: spec.SchemaProps{
+								Description: "iptablesMasqueradeBit is the bit of the iptables fwmark space to mark for SNAT Values must be within the range [0, 31]. Must be different from other mark bits. Warning: Please match the value of the corresponding parameter in kube-proxy. Default: 14",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"iptablesDropBit": {
+							SchemaProps: spec.SchemaProps{
+								Description: "iptablesDropBit is the bit of the iptables fwmark space to mark for dropping packets. Values must be within the range [0, 31]. Must be different from other mark bits. Default: 15",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"featureGates": {
+							SchemaProps: spec.SchemaProps{
+								Description: "featureGates is a map of feature names to bools that enable or disable alpha/experimental features. This field modifies piecemeal the built-in default values from \"k8s.io/kubernetes/pkg/features/kube_features.go\". Default: nil",
+								Type:        []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"boolean"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"failSwapOn": {
+							SchemaProps: spec.SchemaProps{
+								Description: "failSwapOn tells the Kubelet to fail to start if swap is enabled on the node. Default: true",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
+						"containerLogMaxSize": {
+							SchemaProps: spec.SchemaProps{
+								Description: "A quantity defines the maximum size of the container log file before it is rotated. For example: \"5Mi\" or \"256Ki\". Default: \"10Mi\"",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"containerLogMaxFiles": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Maximum number of container log files that can be present for a container. Default: 5",
+								Type:        []string{"integer"},
+								Format:      "int32",
+							},
+						},
+						"systemReserved": {
+							SchemaProps: spec.SchemaProps{
+								Description: "A set of ResourceName=ResourceQuantity (e.g. cpu=200m,memory=150G) pairs that describe resources reserved for non-kubernetes components. Currently only cpu and memory are supported. See http://kubernetes.io/docs/user-guide/compute-resources for more detail. Default: nil",
+								Type:        []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"kubeReserved": {
+							SchemaProps: spec.SchemaProps{
+								Description: "A set of ResourceName=ResourceQuantity (e.g. cpu=200m,memory=150G) pairs that describe resources reserved for kubernetes system components. Currently cpu, memory and local storage for root file system are supported. See http://kubernetes.io/docs/user-guide/compute-resources for more detail. Default: nil",
+								Type:        []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"systemReservedCgroup": {
+							SchemaProps: spec.SchemaProps{
+								Description: "This flag helps kubelet identify absolute name of top level cgroup used to enforce `SystemReserved` compute resource reservation for OS system daemons. Refer to [Node Allocatable](https://git.k8s.io/community/contributors/design-proposals/node/node-allocatable.md) doc for more information. Default: \"\"",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"kubeReservedCgroup": {
+							SchemaProps: spec.SchemaProps{
+								Description: "This flag helps kubelet identify absolute name of top level cgroup used to enforce `KubeReserved` compute resource reservation for Kubernetes node system daemons. Refer to [Node Allocatable](https://git.k8s.io/community/contributors/design-proposals/node/node-allocatable.md) doc for more information. Default: \"\"",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"enforceNodeAllocatable": {
+							SchemaProps: spec.SchemaProps{
+								Description: "This flag specifies the various Node Allocatable enforcements that Kubelet needs to perform. This flag accepts a list of options. Acceptable options are `none`, `pods`, `system-reserved` & `kube-reserved`. If `none` is specified, no other options may be specified. Refer to [Node Allocatable](https://git.k8s.io/community/contributors/design-proposals/node/node-allocatable.md) doc for more information. Default: [\"pods\"]",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{
+				"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeletAuthentication", "github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeletAuthorization", "k8s.io/apimachinery/pkg/apis/meta/v1.Duration"},
+		},
+		"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeletWebhookAuthentication": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Properties: map[string]spec.Schema{
+						"enabled": {
+							SchemaProps: spec.SchemaProps{
+								Description: "enabled allows bearer token authentication backed by the tokenreviews.authentication.k8s.io API",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
+						"cacheTTL": {
+							SchemaProps: spec.SchemaProps{
+								Description: "cacheTTL enables caching of authentication results",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{
+				"k8s.io/apimachinery/pkg/apis/meta/v1.Duration"},
+		},
+		"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeletWebhookAuthorization": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Properties: map[string]spec.Schema{
+						"cacheAuthorizedTTL": {
+							SchemaProps: spec.SchemaProps{
+								Description: "cacheAuthorizedTTL is the duration to cache 'authorized' responses from the webhook authorizer.",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"cacheUnauthorizedTTL": {
+							SchemaProps: spec.SchemaProps{
+								Description: "cacheUnauthorizedTTL is the duration to cache 'unauthorized' responses from the webhook authorizer.",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{
+				"k8s.io/apimachinery/pkg/apis/meta/v1.Duration"},
+		},
+		"github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1.KubeletX509Authentication": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Properties: map[string]spec.Schema{
+						"clientCAFile": {
+							SchemaProps: spec.SchemaProps{
+								Description: "clientCAFile is the path to a PEM-encoded certificate bundle. If set, any request presenting a client certificate signed by one of the authorities in the bundle is authenticated with a username corresponding to the CommonName, and groups corresponding to the Organization in the client certificate.",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+					},
 				},
 			},
 			Dependencies: []string{},
