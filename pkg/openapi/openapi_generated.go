@@ -93,19 +93,6 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								},
 							},
 						},
-						"kubeDNS": {
-							SchemaProps: spec.SchemaProps{
-								Type: []string{"object"},
-								AdditionalProperties: &spec.SchemaOrBool{
-									Schema: &spec.Schema{
-										SchemaProps: spec.SchemaProps{
-											Type:   []string{"string"},
-											Format: "",
-										},
-									},
-								},
-							},
-						},
 						"kubeControllerManager": {
 							SchemaProps: spec.SchemaProps{
 								Type: []string{"object"},
