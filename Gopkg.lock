@@ -287,6 +287,12 @@
   version = "1.0"
 
 [[projects]]
+  name = "github.com/konsorten/go-windows-terminal-sequences"
+  packages = ["."]
+  revision = "5c8c8bd35d3832f5d134ae1e1e375b69a4d25242"
+  version = "v1.0.1"
+
+[[projects]]
   name = "github.com/kr/fs"
   packages = ["."]
   revision = "1455def202f6e05b95cc7bfc7e8ae67ae5141eba"
@@ -423,6 +429,12 @@
     "xfs"
   ]
   revision = "65c1f6f8f0fc1e2185eb9863a3bc751496404259"
+
+[[projects]]
+  name = "github.com/sirupsen/logrus"
+  packages = ["."]
+  revision = "ad15b42461921f1fb3529b058c6786c6a45d5162"
+  version = "v1.1.1"
 
 [[projects]]
   name = "github.com/spf13/cobra"
@@ -1009,6 +1021,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "70cfed6516921c6347903ec47d251c5500605a5c34b3a1b013e37209398bf75b"
+  inputs-digest = "9b14f0ed3dc28f6d6227a20a01d4fb9cbdd7d68cd57e2110cf85de19bf773771"
   solver-name = "gps-cdcl"
   solver-version = 1
