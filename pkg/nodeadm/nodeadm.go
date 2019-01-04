@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"k8s.io/api/core/v1"
+
 	spconstants "github.com/platform9/ssh-provider/constants"
 	spv1 "github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1"
 	"github.com/platform9/ssh-provider/pkg/controller"
@@ -11,17 +13,15 @@ import (
 )
 
 type InitConfiguration struct {
-	MasterConfiguration KubeadmInitConfiguration   `json:"masterConfiguration,omitempty"`
-	Networking          Networking                 `json:"networking,omitempty"`
-	VIPConfiguration    VIPConfiguration           `json:"vipConfiguration,omitempty"`
-	Kubelet             *spv1.KubeletConfiguration `json:"kubelet,omitempty"`
-	NetworkBackend      map[string]string          `json:"networkBackend,omitempty"`
-	KeepAlived          map[string]string          `json:"keepAlived,omitempty"`
+	MasterConfiguration KubeadmMasterConfiguration `json:"masterConfiguration,omitempty"`
+
+	VIPConfiguration VIPConfiguration  `json:"vipConfiguration,omitempty"`
+	NetworkBackend   map[string]string `json:"networkBackend,omitempty"`
+	KeepAlived       map[string]string `json:"keepAlived,omitempty"`
 }
 
 type JoinConfiguration struct {
-	Networking Networking                 `json:"networking,omitempty"`
-	Kubelet    *spv1.KubeletConfiguration `json:"kubelet,omitempty"`
+	NodeConfiguration KubeadmNodeConfiguration `json:"nodeConfiguration"`
 }
 
 type VIPConfiguration struct {
@@ -44,7 +44,8 @@ type Networking struct {
 	// DNSDomain is the dns domain used by k8s services. Defaults to "cluster.local".
 	DNSDomain string `json:"dnsDomain,omitempty"`
 }
-type KubeadmInitConfiguration struct {
+
+type KubeadmMasterConfiguration struct {
 	API                        API                         `json:"api,omitempty"`
 	APIServerCertSANs          []string                    `json:"apiServerCertSANs,omitempty"`
 	Etcd                       Etcd                        `json:"etcd,omitempty"`
@@ -56,6 +57,30 @@ type KubeadmInitConfiguration struct {
 	ControllerManagerExtraArgs map[string]string           `json:"controllerManagerExtraArgs,omitempty"`
 	SchedulerExtraArgs         map[string]string           `json:"schedulerExtraArgs,omitempty"`
 	PrivilegedPods             bool                        `json:"privilegedPods,omitempty"`
+
+	NodeRegistration NodeRegistrationOptions `json:"nodeRegistration"`
+}
+
+type KubeadmNodeConfiguration struct {
+	NodeRegistration NodeRegistrationOptions `json:"nodeRegistration"`
+}
+
+// NodeRegistrationOptions holds fields that relate to registering a new master or node to the cluster, either via "kubeadm init" or "kubeadm join"
+type NodeRegistrationOptions struct {
+	// Name is the `.Metadata.Name` field of the Node API object that will be created in this `kubeadm init` or `kubeadm joiń` operation.
+	// This field is also used in the CommonName field of the kubelet's client certificate to the API server.
+	// Defaults to the hostname of the node if not provided.
+	Name string `json:"name,omitempty"`
+
+	// Taints specifies the taints the Node API object should be registered with. If this field is unset, i.e. nil, in the `kubeadm init` process
+	// it will be defaulted to []v1.Taint{'node-role.kubernetes.io/master=""'}. If you don't want to taint your master node, set this field to an
+	// empty slice, i.e. `taints: {}` in the YAML file. This field is solely used for Node registration.
+	Taints []v1.Taint `json:"taints,omitempty"`
+
+	// KubeletExtraArgs passes through extra arguments to the kubelet. The arguments here are passed to the kubelet command line via the environment file
+	// kubeadm writes at runtime for the kubelet to source. This overrides the generic base-level configuration in the kubelet-config-1.X ConfigMap
+	// Flags have higher higher priority when parsing. These values are local and specific to the node kubeadm is executing on.
+	KubeletExtraArgs map[string]string `json:"kubeletExtraArgs,omitempty"`
 }
 
 type API struct {
@@ -79,33 +104,22 @@ func InitConfigurationForMachine(cluster clusterv1.Cluster, machine clusterv1.Ma
 		return nil, fmt.Errorf("unable to decode cluster spec: %v", err)
 	}
 
+	// NodeRegistrationOptions
+	cfg.MasterConfiguration.NodeRegistration.Name = machine.Name
+	cfg.MasterConfiguration.NodeRegistration.Taints = machine.Spec.Taints
+
 	// MasterConfiguration
 	cfg.MasterConfiguration.KubernetesVersion = machine.Spec.Versions.ControlPlane
 	cfg.MasterConfiguration.Etcd.Endpoints = []string{"https://127.0.0.1:2379"}
 	cfg.MasterConfiguration.Etcd.CAFile = "/etc/etcd/pki/ca.crt"
 	cfg.MasterConfiguration.Etcd.CertFile = "/etc/etcd/pki/apiserver-etcd-client.crt"
 	cfg.MasterConfiguration.Etcd.KeyFile = "/etc/etcd/pki/apiserver-etcd-client.key"
-	if cpc.ClusterConfig != nil {
-		setInitConfigFromClusterConfig(cfg, cpc.ClusterConfig)
+	if err := validateClusterNetworkingConfiguration(cluster); err != nil {
+		return nil, fmt.Errorf("invalid cluster networking configuration: %v", err)
 	}
-	// Networking
-	switch len(cluster.Spec.ClusterNetwork.Pods.CIDRBlocks) {
-	case 0:
-		return nil, fmt.Errorf("cluster %q spec.clusterNetwork.pods.cidrBlocks must contain at least one block", cluster.Name)
-	case 1:
-		cfg.Networking.PodSubnet = cluster.Spec.ClusterNetwork.Pods.CIDRBlocks[0]
-	case 2:
-		return nil, fmt.Errorf("cluster %q spec.clusterNetwork.pods.cidrBlocks must contain at most one block", cluster.Name)
-	}
-	switch len(cluster.Spec.ClusterNetwork.Services.CIDRBlocks) {
-	case 0:
-		return nil, fmt.Errorf("cluster %q spec.clusterNetwork.pods.cidrBlocks must contain at least one block", cluster.Name)
-	case 1:
-		cfg.Networking.ServiceSubnet = cluster.Spec.ClusterNetwork.Services.CIDRBlocks[0]
-	case 2:
-		return nil, fmt.Errorf("cluster %q spec.clusterNetwork.pods.cidrBlocks must contain at most one block", cluster.Name)
-	}
-	cfg.Networking.DNSDomain = cluster.Spec.ClusterNetwork.ServiceDomain
+	cfg.MasterConfiguration.Networking.DNSDomain = cluster.Spec.ClusterNetwork.ServiceDomain
+	cfg.MasterConfiguration.Networking.PodSubnet = cluster.Spec.ClusterNetwork.Pods.CIDRBlocks[0]
+	cfg.MasterConfiguration.Networking.ServiceSubnet = cluster.Spec.ClusterNetwork.Services.CIDRBlocks[0]
 
 	// VIPConfiguration (optional)
 	if cpc.VIPConfiguration != nil {
@@ -167,44 +181,36 @@ func setInitConfigFromClusterConfig(cfg *InitConfiguration, clusterConfig *spv1.
 		cfg.MasterConfiguration.KubeProxy = *clusterConfig.KubeProxy
 	}
 	cfg.MasterConfiguration.SchedulerExtraArgs = clusterConfig.KubeScheduler
-	cfg.Kubelet = clusterConfig.Kubelet
+	if clusterConfig.Kubelet != nil {
+		cfg.MasterConfiguration.KubeletConfiguration = *clusterConfig.Kubelet
+	}
 	cfg.NetworkBackend = clusterConfig.NetworkBackend
 	cfg.KeepAlived = clusterConfig.KeepAlived
 	return nil
 }
 
-func setJoinConfigFromClusterConfig(cfg *JoinConfiguration, clusterConfig *spv1.ClusterConfig) {
-	cfg.Kubelet = clusterConfig.Kubelet
-}
-
 func JoinConfigurationForMachine(cluster *clusterv1.Cluster, machine *clusterv1.Machine) (*JoinConfiguration, error) {
 	cfg := &JoinConfiguration{}
 
-	cpc, err := controller.GetClusterSpec(*cluster)
-	if err != nil {
-		return nil, fmt.Errorf("unable to decode cluster spec: %v", err)
-	}
+	// NodeRegistrationOptions
+	cfg.NodeConfiguration.NodeRegistration.Name = machine.Name
+	cfg.NodeConfiguration.NodeRegistration.Taints = machine.Spec.Taints
 
-	// Networking
-	switch len(cluster.Spec.ClusterNetwork.Pods.CIDRBlocks) {
-	case 0:
-		return nil, fmt.Errorf("cluster %q spec.clusterNetwork.pods.cidrBlocks must contain at least one block", cluster.Name)
-	case 1:
-		cfg.Networking.PodSubnet = cluster.Spec.ClusterNetwork.Pods.CIDRBlocks[0]
-	default:
-		return nil, fmt.Errorf("cluster %q spec.clusterNetwork.pods.cidrBlocks must contain at most one block", cluster.Name)
-	}
-	switch len(cluster.Spec.ClusterNetwork.Services.CIDRBlocks) {
-	case 0:
-		return nil, fmt.Errorf("cluster %q spec.clusterNetwork.pods.cidrBlocks must contain at least one block", cluster.Name)
-	case 1:
-		cfg.Networking.ServiceSubnet = cluster.Spec.ClusterNetwork.Services.CIDRBlocks[0]
-	default:
-		return nil, fmt.Errorf("cluster %q spec.clusterNetwork.pods.cidrBlocks must contain at most one block", cluster.Name)
-	}
-	cfg.Networking.DNSDomain = cluster.Spec.ClusterNetwork.ServiceDomain
-	if cpc.ClusterConfig != nil {
-		setJoinConfigFromClusterConfig(cfg, cpc.ClusterConfig)
-	}
 	return cfg, nil
+}
+
+func validateClusterNetworkingConfiguration(cluster clusterv1.Cluster) error {
+	switch cbl := len(cluster.Spec.ClusterNetwork.Pods.CIDRBlocks); {
+	case cbl < 1:
+		return fmt.Errorf("cluster %q spec.clusterNetwork.pods.cidrBlocks must contain at least one block", cluster.Name)
+	case cbl > 1:
+		return fmt.Errorf("cluster %q spec.clusterNetwork.pods.cidrBlocks must contain at most one block", cluster.Name)
+	}
+	switch cbl := len(cluster.Spec.ClusterNetwork.Services.CIDRBlocks); {
+	case cbl < 1:
+		return fmt.Errorf("cluster %q spec.clusterNetwork.pods.cidrBlocks must contain at least one block", cluster.Name)
+	case cbl > 1:
+		return fmt.Errorf("cluster %q spec.clusterNetwork.pods.cidrBlocks must contain at most one block", cluster.Name)
+	}
+	return nil
 }
