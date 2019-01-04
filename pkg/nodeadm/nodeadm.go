@@ -56,7 +56,6 @@ type KubeadmMasterConfiguration struct {
 	APIServerExtraArgs         map[string]string           `json:"apiServerExtraArgs,omitempty"`
 	ControllerManagerExtraArgs map[string]string           `json:"controllerManagerExtraArgs,omitempty"`
 	SchedulerExtraArgs         map[string]string           `json:"schedulerExtraArgs,omitempty"`
-	PrivilegedPods             bool                        `json:"privilegedPods,omitempty"`
 
 	NodeRegistration NodeRegistrationOptions `json:"nodeRegistration"`
 }
@@ -156,18 +155,6 @@ func setKubeAPIServerConfig(cfg *InitConfiguration, clusterConfig *spv1.ClusterC
 			// delete as it should not be considered as an extra arg
 			delete(clusterConfig.KubeAPIServer, spconstants.KubeAPIServerSecurePortKey)
 		}
-		// PrivilegedPods
-		allowPrivilegedStr, ok := clusterConfig.KubeAPIServer[spconstants.KubeAPIServerAllowPrivilegedKey]
-		if ok {
-			allowPrivileged, err := strconv.ParseBool(allowPrivilegedStr)
-			if err != nil {
-				return fmt.Errorf("unable to parse allow privileged field value: %s", bindPortStr)
-			}
-			cfg.MasterConfiguration.PrivilegedPods = allowPrivileged
-			// delete as it should not be considered as an extra arg
-			delete(clusterConfig.KubeAPIServer, spconstants.KubeAPIServerAllowPrivilegedKey)
-		}
-		cfg.MasterConfiguration.APIServerExtraArgs = clusterConfig.KubeAPIServer
 	}
 	return nil
 }
