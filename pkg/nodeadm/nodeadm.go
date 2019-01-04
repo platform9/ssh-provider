@@ -80,11 +80,6 @@ func InitConfigurationForMachine(cluster clusterv1.Cluster, machine clusterv1.Ma
 	}
 
 	// MasterConfiguration
-	if cpc.VIPConfiguration.IP != "" {
-		// If ControlPlaneEndpoint is not specified, kubeadm will use AdvertiseAddress + BindPort.
-		cfg.MasterConfiguration.API.ControlPlaneEndpoint = cpc.VIPConfiguration.IP
-		cfg.MasterConfiguration.APIServerCertSANs = []string{cpc.VIPConfiguration.IP}
-	} // else: kubeadm will set defaults
 	cfg.MasterConfiguration.KubernetesVersion = machine.Spec.Versions.ControlPlane
 	cfg.MasterConfiguration.Etcd.Endpoints = []string{"https://127.0.0.1:2379"}
 	cfg.MasterConfiguration.Etcd.CAFile = "/etc/etcd/pki/ca.crt"
@@ -112,12 +107,20 @@ func InitConfigurationForMachine(cluster clusterv1.Cluster, machine clusterv1.Ma
 	}
 	cfg.Networking.DNSDomain = cluster.Spec.ClusterNetwork.ServiceDomain
 
-	// VIPConfiguration
+	// VIPConfiguration (optional)
 	if cpc.VIPConfiguration != nil {
 		cfg.VIPConfiguration.IP = cpc.VIPConfiguration.IP
 		cfg.VIPConfiguration.RouterID = cpc.VIPConfiguration.RouterID
+		cfg.VIPConfiguration.NetworkInterface = pm.Spec.VIPNetworkInterface
+
+		cfg.MasterConfiguration.API.ControlPlaneEndpoint = cpc.VIPConfiguration.IP
+		cfg.MasterConfiguration.APIServerCertSANs = []string{cpc.VIPConfiguration.IP}
 	}
-	cfg.VIPConfiguration.NetworkInterface = pm.Spec.VIPNetworkInterface
+
+	// ClusterConfig (optional)
+	if cpc.ClusterConfig != nil {
+		setInitConfigFromClusterConfig(cfg, cpc.ClusterConfig)
+	}
 
 	return cfg, nil
 }
