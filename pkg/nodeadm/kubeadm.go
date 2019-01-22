@@ -3,6 +3,7 @@ package nodeadm
 import (
 	spv1 "github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1"
 	"k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Networking contains elements describing cluster's networking configuration
@@ -16,6 +17,8 @@ type Networking struct {
 }
 
 type KubeadmMasterConfiguration struct {
+	metav1.TypeMeta `json:",inline"`
+
 	API                        API                         `json:"api,omitempty"`
 	APIServerCertSANs          []string                    `json:"apiServerCertSANs,omitempty"`
 	Etcd                       Etcd                        `json:"etcd,omitempty"`
@@ -31,6 +34,8 @@ type KubeadmMasterConfiguration struct {
 }
 
 type KubeadmNodeConfiguration struct {
+	metav1.TypeMeta `json:",inline"`
+
 	// NodeRegistration holds fields that relate to registering the new master node to the cluster
 	NodeRegistration NodeRegistrationOptions `json:"nodeRegistration"`
 }

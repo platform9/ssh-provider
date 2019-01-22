@@ -7,6 +7,7 @@ import (
 	spconstants "github.com/platform9/ssh-provider/constants"
 	spv1 "github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1"
 	"github.com/platform9/ssh-provider/pkg/controller"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clusterv1 "sigs.k8s.io/cluster-api/pkg/apis/cluster/v1alpha1"
 )
 
@@ -34,7 +35,14 @@ type VIPConfiguration struct {
 }
 
 func InitConfigurationForMachine(cluster clusterv1.Cluster, machine clusterv1.Machine, pm spv1.ProvisionedMachine) (*InitConfiguration, error) {
-	cfg := &InitConfiguration{}
+	cfg := &InitConfiguration{
+		MasterConfiguration: KubeadmMasterConfiguration{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "MasterConfiguration",
+				APIVersion: "kubeadm.k8s.io/v1alpha2",
+			},
+		},
+	}
 
 	cpc, err := controller.GetClusterSpec(cluster)
 	if err != nil {
@@ -115,7 +123,14 @@ func setInitConfigFromClusterConfig(cfg *InitConfiguration, clusterConfig *spv1.
 }
 
 func JoinConfigurationForMachine(cluster *clusterv1.Cluster, machine *clusterv1.Machine) (*JoinConfiguration, error) {
-	cfg := &JoinConfiguration{}
+	cfg := &JoinConfiguration{
+		NodeConfiguration: KubeadmNodeConfiguration{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "NodeConfiguration",
+				APIVersion: "kubeadm.k8s.io/v1alpha2",
+			},
+		},
+	}
 
 	// NodeRegistrationOptions
 	cfg.NodeConfiguration.NodeRegistration.Name = machine.Name
