@@ -36,6 +36,24 @@ type KubeadmMasterConfiguration struct {
 type KubeadmNodeConfiguration struct {
 	metav1.TypeMeta `json:",inline"`
 
+	// Token is used for both discovery and TLS bootstrapping.
+	Token string `json:"token"`
+
+	// DiscoveryTokenAPIServers is a set of IPs to API servers from which info
+	// will be fetched. Currently we only pay attention to one API server but
+	// hope to support >1 in the future.
+	DiscoveryTokenAPIServers []string `json:"discoveryTokenAPIServers,omitempty"`
+
+	// DiscoveryTokenCACertHashes specifies a set of public key pins to verify
+	// when token-based discovery is used. The root CA found during discovery
+	// must match one of these values. Specifying an empty set disables root CA
+	// pinning, which can be unsafe. Each hash is specified as "<type>:<value>",
+	// where the only currently supported type is "sha256". This is a hex-encoded
+	// SHA-256 hash of the Subject Public Key Info (SPKI) object in DER-encoded
+	// ASN.1. These hashes can be calculated using, for example, OpenSSL:
+	// openssl x509 -pubkey -in ca.crt openssl rsa -pubin -outform der 2>&/dev/null | openssl dgst -sha256 -hex
+	DiscoveryTokenCACertHashes []string `json:"discoveryTokenCACertHashes,omitempty"`
+
 	// NodeRegistration holds fields that relate to registering the new master node to the cluster
 	NodeRegistration NodeRegistrationOptions `json:"nodeRegistration"`
 }

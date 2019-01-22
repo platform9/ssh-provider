@@ -55,7 +55,13 @@ func deployKubernetesNode(cluster *clusterv1.Cluster, machine *clusterv1.Machine
 	if !ok {
 		return fmt.Errorf("bootstrap token secret missing %q key", "cahash")
 	}
-	joinConfig, err := nodeadm.JoinConfigurationForMachine(cluster, machine)
+	discoveryTokenAPIServers := []string{
+		fmt.Sprintf("%s:%d", apiEndpoint.Host, apiEndpoint.Port),
+	}
+	discoveryTokenCAHashes := []string{
+		string(caHash),
+	}
+	joinConfig, err := nodeadm.JoinConfigurationForMachine(cluster, machine, discoveryTokenAPIServers, discoveryTokenCAHashes, string(bootstrapToken))
 	if err != nil {
 		return fmt.Errorf("error creating nodeadm join configuration: %v", err)
 	}
@@ -71,13 +77,9 @@ func deployKubernetesNode(cluster *clusterv1.Cluster, machine *clusterv1.Machine
 	if err := machineClient.MoveFile(tmpNodeadmConfigPath, NodeadmConfigPath); err != nil {
 		return fmt.Errorf("error moving file from %q to %q:%v", tmpNodeadmConfigPath, NodeadmConfigPath, err)
 	}
-	cmd := fmt.Sprintf("%s join --cfg %s --master %v:%v --token %s --cahash %s",
+	cmd := fmt.Sprintf("%s join --cfg %s",
 		NodeadmPath,
-		NodeadmConfigPath,
-		apiEndpoint.Host,
-		apiEndpoint.Port,
-		bootstrapToken,
-		caHash)
+		NodeadmConfigPath)
 	log.Println("deploying kubernetes. this might take a few minutes..")
 	stdOut, stdErr, err := machineClient.RunCommand(cmd)
 	if err != nil {

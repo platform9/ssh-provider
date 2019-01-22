@@ -122,7 +122,7 @@ func setInitConfigFromClusterConfig(cfg *InitConfiguration, clusterConfig *spv1.
 	return nil
 }
 
-func JoinConfigurationForMachine(cluster *clusterv1.Cluster, machine *clusterv1.Machine) (*JoinConfiguration, error) {
+func JoinConfigurationForMachine(cluster *clusterv1.Cluster, machine *clusterv1.Machine, discoveryTokenAPIServers, discoveryTokenCACertHashes []string, token string) (*JoinConfiguration, error) {
 	cfg := &JoinConfiguration{
 		NodeConfiguration: KubeadmNodeConfiguration{
 			TypeMeta: metav1.TypeMeta{
@@ -131,6 +131,11 @@ func JoinConfigurationForMachine(cluster *clusterv1.Cluster, machine *clusterv1.
 			},
 		},
 	}
+
+	// Discovery and TLS bootstrap configuration
+	cfg.NodeConfiguration.DiscoveryTokenAPIServers = discoveryTokenAPIServers
+	cfg.NodeConfiguration.DiscoveryTokenCACertHashes = discoveryTokenCACertHashes
+	cfg.NodeConfiguration.Token = token
 
 	// NodeRegistrationOptions
 	cfg.NodeConfiguration.NodeRegistration.Name = machine.Name
