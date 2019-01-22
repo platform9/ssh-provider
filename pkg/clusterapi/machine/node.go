@@ -71,7 +71,7 @@ func deployKubernetesNode(cluster *clusterv1.Cluster, machine *clusterv1.Machine
 	}
 	log.Println("writing nodeadm configuration")
 	tmpNodeadmConfigPath := "/tmp/nodeadm.yaml"
-	if err := machineClient.WriteFile(tmpNodeadmConfigPath, 0644, joinConfigBytes); err != nil {
+	if err := machineClient.WriteFile(tmpNodeadmConfigPath, 0600, joinConfigBytes); err != nil {
 		return fmt.Errorf("error writing nodeadm join configuration to %q: %v", NodeadmConfigPath, err)
 	}
 	if err := machineClient.MoveFile(tmpNodeadmConfigPath, NodeadmConfigPath); err != nil {
