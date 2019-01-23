@@ -82,9 +82,23 @@ type API struct {
 	ControlPlaneEndpoint string `json:"controlPlaneEndpoint"`
 }
 
+// Etcd contains elements describing Etcd configuration.
 type Etcd struct {
-	Endpoints []string `json:"endpoints,omitempty"`
-	CAFile    string   `json:"caFile,omitempty"`
-	CertFile  string   `json:"certFile,omitempty"`
-	KeyFile   string   `json:"keyFile,omitempty"`
+	// External describes how to connect to an external etcd cluster
+	// Local and External are mutually exclusive
+	External *ExternalEtcd `json:"external,omitempty"`
+}
+
+// ExternalEtcd describes an external etcd cluster
+type ExternalEtcd struct {
+
+	// Endpoints of etcd members. Useful for using external etcd.
+	// If not provided, kubeadm will run etcd in a static pod.
+	Endpoints []string `json:"endpoints"`
+	// CAFile is an SSL Certificate Authority file used to secure etcd communication.
+	CAFile string `json:"caFile"`
+	// CertFile is an SSL certification file used to secure etcd communication.
+	CertFile string `json:"certFile"`
+	// KeyFile is an SSL key file used to secure etcd communication.
+	KeyFile string `json:"keyFile"`
 }

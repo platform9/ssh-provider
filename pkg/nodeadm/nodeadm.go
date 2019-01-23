@@ -60,10 +60,12 @@ func InitConfigurationForMachine(cluster clusterv1.Cluster, machine clusterv1.Ma
 
 	// MasterConfiguration
 	cfg.MasterConfiguration.KubernetesVersion = mpc.ComponentVersions.KubernetesVersion
-	cfg.MasterConfiguration.Etcd.Endpoints = []string{"https://127.0.0.1:2379"}
-	cfg.MasterConfiguration.Etcd.CAFile = "/etc/etcd/pki/ca.crt"
-	cfg.MasterConfiguration.Etcd.CertFile = "/etc/etcd/pki/apiserver-etcd-client.crt"
-	cfg.MasterConfiguration.Etcd.KeyFile = "/etc/etcd/pki/apiserver-etcd-client.key"
+	cfg.MasterConfiguration.Etcd.External = &ExternalEtcd{
+		Endpoints: []string{"https://127.0.0.1:2379"},
+		CAFile:    "/etc/etcd/pki/ca.crt",
+		CertFile:  "/etc/etcd/pki/apiserver-etcd-client.crt",
+		KeyFile:   "/etc/etcd/pki/apiserver-etcd-client.key",
+	}
 	if err := validateClusterNetworkingConfiguration(cluster); err != nil {
 		return nil, fmt.Errorf("invalid cluster networking configuration: %v", err)
 	}
