@@ -49,12 +49,17 @@ func InitConfigurationForMachine(cluster clusterv1.Cluster, machine clusterv1.Ma
 		return nil, fmt.Errorf("unable to decode cluster spec: %v", err)
 	}
 
+	mpc, err := controller.GetMachineSpec(machine)
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode machine spec: %v", err)
+	}
+
 	// NodeRegistrationOptions
 	cfg.MasterConfiguration.NodeRegistration.Name = machine.Name
 	cfg.MasterConfiguration.NodeRegistration.Taints = machine.Spec.Taints
 
 	// MasterConfiguration
-	cfg.MasterConfiguration.KubernetesVersion = machine.Spec.Versions.ControlPlane
+	cfg.MasterConfiguration.KubernetesVersion = mpc.ComponentVersions.KubernetesVersion
 	cfg.MasterConfiguration.Etcd.Endpoints = []string{"https://127.0.0.1:2379"}
 	cfg.MasterConfiguration.Etcd.CAFile = "/etc/etcd/pki/ca.crt"
 	cfg.MasterConfiguration.Etcd.CertFile = "/etc/etcd/pki/apiserver-etcd-client.crt"
