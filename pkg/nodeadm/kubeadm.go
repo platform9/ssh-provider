@@ -2,7 +2,7 @@ package nodeadm
 
 import (
 	spv1 "github.com/platform9/ssh-provider/pkg/apis/sshprovider/v1alpha1"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -19,16 +19,16 @@ type Networking struct {
 type KubeadmMasterConfiguration struct {
 	metav1.TypeMeta `json:",inline"`
 
-	API                        API                         `json:"api,omitempty"`
-	APIServerCertSANs          []string                    `json:"apiServerCertSANs,omitempty"`
-	Etcd                       Etcd                        `json:"etcd,omitempty"`
-	KubernetesVersion          string                      `json:"kubernetesVersion,omitempty"`
-	Networking                 Networking                  `json:"networking,omitempty"`
-	KubeletConfiguration       spv1.KubeletConfiguration   `json:"kubeletConfiguration,omitempty"`
-	KubeProxy                  spv1.KubeProxyConfiguration `json:"kubeProxy,omitempty"`
-	APIServerExtraArgs         map[string]string           `json:"apiServerExtraArgs,omitempty"`
-	ControllerManagerExtraArgs map[string]string           `json:"controllerManagerExtraArgs,omitempty"`
-	SchedulerExtraArgs         map[string]string           `json:"schedulerExtraArgs,omitempty"`
+	API                        API                  `json:"api,omitempty"`
+	APIServerCertSANs          []string             `json:"apiServerCertSANs,omitempty"`
+	Etcd                       Etcd                 `json:"etcd,omitempty"`
+	KubernetesVersion          string               `json:"kubernetesVersion,omitempty"`
+	Networking                 Networking           `json:"networking,omitempty"`
+	KubeletConfiguration       KubeletConfiguration `json:"kubeletConfiguration,omitempty"`
+	KubeProxy                  KubeProxy            `json:"kubeProxy,omitempty"`
+	APIServerExtraArgs         map[string]string    `json:"apiServerExtraArgs,omitempty"`
+	ControllerManagerExtraArgs map[string]string    `json:"controllerManagerExtraArgs,omitempty"`
+	SchedulerExtraArgs         map[string]string    `json:"schedulerExtraArgs,omitempty"`
 
 	NodeRegistration NodeRegistrationOptions `json:"nodeRegistration"`
 }
@@ -101,4 +101,14 @@ type ExternalEtcd struct {
 	CertFile string `json:"certFile"`
 	// KeyFile is an SSL key file used to secure etcd communication.
 	KeyFile string `json:"keyFile"`
+}
+
+// KubeletConfiguration contains elements describing initial remote configuration of kubelet.
+type KubeletConfiguration struct {
+	BaseConfig *spv1.KubeletConfiguration `json:"baseConfig,omitempty"`
+}
+
+// KubeProxy contains elements describing the proxy configuration.
+type KubeProxy struct {
+	Config *spv1.KubeProxyConfiguration `json:"config,omitempty"`
 }

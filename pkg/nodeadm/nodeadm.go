@@ -118,11 +118,11 @@ func setInitConfigFromClusterConfig(cfg *InitConfiguration, clusterConfig *spv1.
 	}
 	cfg.MasterConfiguration.ControllerManagerExtraArgs = clusterConfig.KubeControllerManager
 	if clusterConfig.KubeProxy != nil {
-		cfg.MasterConfiguration.KubeProxy = *clusterConfig.KubeProxy
+		cfg.MasterConfiguration.KubeProxy.Config = clusterConfig.KubeProxy.DeepCopy()
 	}
 	cfg.MasterConfiguration.SchedulerExtraArgs = clusterConfig.KubeScheduler
 	if clusterConfig.Kubelet != nil {
-		cfg.MasterConfiguration.KubeletConfiguration = *clusterConfig.Kubelet
+		cfg.MasterConfiguration.KubeletConfiguration.BaseConfig = clusterConfig.Kubelet.DeepCopy()
 	}
 	cfg.NetworkBackend = clusterConfig.NetworkBackend
 	cfg.KeepAlived = clusterConfig.KeepAlived
