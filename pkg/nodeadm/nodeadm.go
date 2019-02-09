@@ -14,7 +14,7 @@ import (
 type InitConfiguration struct {
 	MasterConfiguration KubeadmMasterConfiguration `json:"masterConfiguration,omitempty"`
 
-	VIPConfiguration VIPConfiguration  `json:"vipConfiguration,omitempty"`
+	VIPConfiguration *VIPConfiguration `json:"vipConfiguration,omitempty"`
 	NetworkBackend   map[string]string `json:"networkBackend,omitempty"`
 	KeepAlived       map[string]string `json:"keepAlived,omitempty"`
 }
@@ -75,9 +75,11 @@ func InitConfigurationForMachine(cluster clusterv1.Cluster, machine clusterv1.Ma
 
 	// VIPConfiguration (optional)
 	if cpc.VIPConfiguration != nil {
-		cfg.VIPConfiguration.IP = cpc.VIPConfiguration.IP
-		cfg.VIPConfiguration.RouterID = cpc.VIPConfiguration.RouterID
-		cfg.VIPConfiguration.NetworkInterface = pm.Spec.VIPNetworkInterface
+		cfg.VIPConfiguration = &VIPConfiguration{
+			IP:               cpc.VIPConfiguration.IP,
+			RouterID:         cpc.VIPConfiguration.RouterID,
+			NetworkInterface: pm.Spec.VIPNetworkInterface,
+		}
 
 		cfg.MasterConfiguration.API.ControlPlaneEndpoint = cpc.VIPConfiguration.IP
 		cfg.MasterConfiguration.APIServerCertSANs = []string{cpc.VIPConfiguration.IP}
