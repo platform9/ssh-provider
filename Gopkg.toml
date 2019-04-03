@@ -118,3 +118,7 @@ required = [
 [[constraint]]
   name = "sigs.k8s.io/cluster-api"
   branch = "master"
+
+[[constraint]]
+  name = "github.com/google/go-cmp"
+  version = "0.2.0"
